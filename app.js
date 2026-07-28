@@ -1,90 +1,191 @@
-// ===== تنظیمات =====
+// ============================================
+// 🔥 Firebase Configuration
+// ============================================
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDj97UCS7ZuLtpQJFACD0zesDR8gVK6RYA",
+    authDomain: "nfc-bank-card-reader.firebaseapp.com",
+    databaseURL: "https://nfc-bank-card-reader-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "nfc-bank-card-reader",
+    storageBucket: "nfc-bank-card-reader.firebasestorage.app",
+    messagingSenderId: "961058467244",
+    appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
+};
+
+// Initialize Firebase
+firebase.initializeApp(FIREBASE_CONFIG);
+const database = firebase.database();
+
+console.log('🔥 Firebase connected to:', FIREBASE_CONFIG.projectId);
+
+// ============================================
+// 💾 Local Database (Fallback)
+// ============================================
 const DB_NAME = 'BankCardDB';
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '2.0.0';
 
-// ===== دیتابیس محلی =====
-function getDB() {
-  try {
-    const db = localStorage.getItem(DB_NAME);
-    return db ? JSON.parse(db) : {};
-  } catch(e) {
-    return {};
-  }
+function getLocalDB() {
+    try {
+        const db = localStorage.getItem(DB_NAME);
+        return db ? JSON.parse(db) : {};
+    } catch(e) {
+        return {};
+    }
 }
 
-function saveDB(db) {
-  try {
-    localStorage.setItem(DB_NAME, JSON.stringify(db));
-  } catch(e) {
-    console.error('Save error:', e);
-  }
+function saveLocalDB(db) {
+    try {
+        localStorage.setItem(DB_NAME, JSON.stringify(db));
+    } catch(e) {
+        console.error('Local save error:', e);
+    }
 }
 
-function saveCardData(empId, data) {
-  const db = getDB();
-  db[empId] = data;
-  saveDB(db);
-  console.log('✅ Data saved for ID:', empId, data);
+// ============================================
+// ☁️ Save to Firebase
+// ============================================
+async function saveToFirebase(empId, data) {
+    try {
+        await database.ref('cards/' + empId).set(data);
+        console.log('☁️ Saved to Firebase:', empId);
+        return true;
+    } catch(e) {
+        console.error('Firebase save error:', e);
+        return false;
+    }
 }
 
-function getCardData(empId) {
-  const db = getDB();
-  console.log('🔍 Looking for ID:', empId, 'Found:', db[empId] ? 'Yes' : 'No');
-  return db[empId] || null;
+// ============================================
+// 📥 Get Card Data (Firebase first, then Local)
+// ============================================
+async function getCardData(empId) {
+    // 1. Try Firebase first
+    try {
+        const snapshot = await database.ref('cards/' + empId).once('value');
+        const firebaseData = snapshot.val();
+        
+        if (firebaseData) {
+            console.log('☁️ Loaded from Firebase:', empId);
+            // Update local cache
+            const localDB = getLocalDB();
+            localDB[empId] = firebaseData;
+            saveLocalDB(localDB);
+            return firebaseData;
+        }
+    } catch(e) {
+        console.log('Firebase read error, trying local...');
+    }
+    
+    // 2. Fallback to LocalStorage
+    const localDB = getLocalDB();
+    if (localDB[empId]) {
+        console.log('📦 Loaded from LocalStorage:', empId);
+        return localDB[empId];
+    }
+    
+    console.log('❌ No data found for:', empId);
+    return null;
 }
 
-// ===== هش پین =====
+// ============================================
+// 💰 Deduct €1.00 from REMAINDER balance
+// ============================================
+async function deductOneEuro(empId, currentData) {
+    // Parse REMAINDER balance (نه Account Balance)
+    let balanceStr = currentData.remainderBalance || currentData.accountBalance || '0';
+    balanceStr = balanceStr.replace(/[^0-9.]/g, '');
+    let balance = parseFloat(balanceStr) || 0;
+    
+    // Subtract €1.00
+    balance = Math.max(0, balance - 1);
+    
+    // Format balance
+    const newBalance = balance.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    // Update data - فقط remainderBalance کم میشه، accountBalance ثابت میمونه
+    const updatedData = {
+        ...currentData,
+        remainderBalance: newBalance,
+        lastAccessed: new Date().toISOString(),
+        totalDeductions: (currentData.totalDeductions || 0) + 1
+    };
+    
+    // Save to Firebase
+    await saveToFirebase(empId, updatedData);
+    
+    // Save to LocalStorage
+    const localDB = getLocalDB();
+    localDB[empId] = updatedData;
+    saveLocalDB(localDB);
+    
+    console.log('💰 €1.00 deducted from remainder. New remainder: €' + newBalance);
+    console.log('💳 Account balance unchanged: €' + (currentData.accountBalance || '0'));
+    
+    return updatedData;
+}
+
+// ============================================
+// 🔐 PIN Hashing
+// ============================================
 function hashPin(pin) {
-  let h = 0;
-  for (let i = 0; i < pin.length; i++) {
-    h = ((h << 5) - h) + pin.charCodeAt(i) * (i * 7 + 3);
-    h |= 0;
-  }
-  return Math.abs(h).toString(36);
+    let h = 0;
+    for (let i = 0; i < pin.length; i++) {
+        h = ((h << 5) - h) + pin.charCodeAt(i) * (i * 7 + 3);
+        h |= 0;
+    }
+    return Math.abs(h).toString(36);
 }
 
-// ===== نوتیفیکیشن =====
+// ============================================
+// 🔔 Notification
+// ============================================
 function requestNotificationPermission() {
-  if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission();
-  }
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
 }
 
 function showSystemNotification(title, body) {
-  if ('vibrate' in navigator) {
-    navigator.vibrate([200, 100, 200]);
-  }
-  
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(title, {
-      body: body,
-      icon: '💳',
-      badge: '💳',
-      vibrate: [200, 100, 200],
-      tag: 'balance'
-    });
-  }
-  
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.ready.then(reg => {
-      reg.showNotification(title, {
-        body: body,
-        icon: '💳',
-        badge: '💳',
-        vibrate: [200, 100, 200],
-        tag: 'balance'
-      });
-    });
-  }
+    if ('vibrate' in navigator) {
+        navigator.vibrate([200, 100, 200]);
+    }
+    
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: body,
+            icon: '💳',
+            badge: '💳',
+            vibrate: [200, 100, 200],
+            tag: 'balance'
+        });
+    }
+    
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(title, {
+                body: body,
+                icon: '💳',
+                badge: '💳',
+                vibrate: [200, 100, 200],
+                tag: 'balance'
+            });
+        });
+    }
 }
 
-// ===== ثبت Service Worker =====
+// ============================================
+// 📱 Service Worker Registration
+// ============================================
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(reg => console.log('✅ SW registered'))
-    .catch(err => console.log('SW error:', err));
+    navigator.serviceWorker.register('/NFC-Bank-Card-Reader/sw.js')
+        .then(reg => console.log('✅ SW registered'))
+        .catch(err => console.log('SW error:', err));
 }
 
+// First click notification permission
 document.addEventListener('click', requestNotificationPermission, { once: true });
 
-console.log('✅ App.js loaded - Version ' + APP_VERSION);
+console.log('✅ NFC Bank Card Reader v' + APP_VERSION + ' Ready');
+console.log('🔒 Firebase Project:', FIREBASE_CONFIG.projectId);
