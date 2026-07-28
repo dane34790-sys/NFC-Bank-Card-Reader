@@ -6,6 +6,10 @@
   "background_color": "#0a0a0a",
   "theme_color": "#ffd700",
   "orientation": "portrait",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
   "icons": [
     {
       "src": "assets/icons/icon-512x512.png",
