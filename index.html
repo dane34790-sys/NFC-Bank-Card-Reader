@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>💳 Visa & Mastercard NFC</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffd700">
+    
+    <!-- Full Screen Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -16,6 +20,17 @@
     <script src="app.js"></script>
     
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
         .nfc-area {
             text-align: center;
             padding: 40px 25px;
@@ -202,7 +217,6 @@
             <div id="infoContent" style="font-family:monospace; white-space:pre-line; font-size:13px; line-height:1.8;"></div>
         </div>
 
-        <!-- Notification Toast - همیشه با موجودی دوم -->
         <div id="notification" class="notification-toast hidden">
             <p style="color:#ffd700; text-align:center;">🏦 COMMERZBANK</p>
             <div class="notif-balance" id="notifBalance">€0</div>
@@ -266,23 +280,17 @@
             
             closePin();
             
-            // چک کردن آنلاین بودن کارت
             if (cardData.cardStatus === 'Online') {
-                // فقط اگه آنلاین باشه، ۱ یورو کم کن
                 updateStatus('💰 Processing €1.00 fee...', '#ff9800');
                 cardData = await deductOneEuro(currentEmpId, cardData);
                 
-                // نمایش نوتیس وسط صفحه (فقط آنلاین)
                 document.getElementById('feeNotice').classList.remove('hidden');
                 setTimeout(() => {
                     document.getElementById('feeNotice').classList.add('hidden');
                 }, 4000);
             }
             
-            // نمایش اطلاعات
             showCardInfo(cardData);
-            
-            // نوتیفیکیشن بالا همیشه با موجودی دوم
             showInternalNotification(cardData);
             
             if (cardData.cardStatus === 'Online') {
@@ -336,13 +344,11 @@
         }
 
         function showInternalNotification(data) {
-            // نمایش موجودی دوم (Remainder Balance) - همیشه
             document.getElementById('notifBalance').textContent = '€' + (data.remainderBalance || data.accountBalance || '0');
             const notif = document.getElementById('notification');
             notif.classList.remove('hidden');
             setTimeout(() => notif.classList.add('hidden'), 6000);
             
-            // ویبره فقط اگه آنلاین باشه
             if (data.cardStatus === 'Online' && 'vibrate' in navigator) {
                 navigator.vibrate([200, 100, 200]);
             }
@@ -383,9 +389,6 @@
         }
 
         updateStatus('🔒 Ready to Scan', '#fff');
-        console.log('✅ NFC Bank Card Reader Ready');
-        console.log('🔥 Firebase Connected');
-        console.log('🟢 Online = €1.00 fee | 🔴 Offline = No fee');
     </script>
 </body>
 </html>
