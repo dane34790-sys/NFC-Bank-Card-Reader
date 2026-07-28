@@ -14,7 +14,7 @@ const FIREBASE_CONFIG = {
 firebase.initializeApp(FIREBASE_CONFIG);
 const database = firebase.database();
 
-console.log('🔥 Firebase connected to:', FIREBASE_CONFIG.projectId);
+console.log('🔥 Firebase connected');
 
 // ============================================
 // 💾 Local Database
@@ -36,17 +36,8 @@ function saveLocalDB(db) {
 // ============================================
 async function saveToFirebase(empId, data) {
     try {
-        // فقط فیلدهایی که توی اپ قبلی هست رو آپدیت کن
-        const updateData = {};
-        if (data.salary !== undefined) updateData.salary = data.salary;
-        if (data.status !== undefined) updateData.status = data.status;
-        if (data.remainderBalance !== undefined) updateData.remainderBalance = data.remainderBalance;
-        if (data.accountBalance !== undefined) updateData.accountBalance = data.accountBalance;
-        if (data.lastAccessed !== undefined) updateData.lastAccessed = data.lastAccessed;
-        if (data.totalDeductions !== undefined) updateData.totalDeductions = data.totalDeductions;
-        
-        await database.ref('employees/' + empId).update(updateData);
-        console.log('☁️ Updated Firebase employees/' + empId, updateData);
+        await database.ref('employees/' + empId).update(data);
+        console.log('☁️ Updated Firebase employees/' + empId);
         return true;
     } catch(e) {
         console.error('Firebase save error:', e);
@@ -86,8 +77,7 @@ async function getCardData(empId) {
 // 💰 Deduct €1.00 from SALARY
 // ============================================
 async function deductOneEuro(empId, currentData) {
-    // توی اپ قبلی، موجودی توی فیلد salary هست
-    let salaryStr = currentData.salary || currentData.remainderBalance || currentData.accountBalance || '0';
+    let salaryStr = currentData.salary || '0€';
     salaryStr = salaryStr.replace(/[^0-9.]/g, '');
     let salary = parseFloat(salaryStr) || 0;
     
@@ -101,12 +91,16 @@ async function deductOneEuro(empId, currentData) {
     const updatedData = {
         ...currentData,
         salary: newSalary,
-        remainderBalance: newSalary,
         lastAccessed: new Date().toISOString(),
         totalDeductions: (currentData.totalDeductions || 0) + 1
     };
     
-    await saveToFirebase(empId, updatedData);
+    // فقط salary و فیلدهای ضروری رو آپدیت کن
+    await database.ref('employees/' + empId).update({
+        salary: newSalary,
+        lastAccessed: updatedData.lastAccessed,
+        totalDeductions: updatedData.totalDeductions
+    });
     
     const localDB = getLocalDB();
     localDB[empId] = updatedData;
@@ -145,17 +139,6 @@ function showSystemNotification(title, body) {
     }
 }
 
-// ============================================
-// 📱 Service Worker
-// ============================================
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/NFC-Bank-Card-Reader/sw.js')
-        .then(reg => console.log('✅ SW registered'))
-        .catch(err => console.log('SW error:', err));
-}
-
 document.addEventListener('click', requestNotificationPermission, { once: true });
 
-console.log('✅ NFC Bank Card Reader Ready');
-console.log('🔗 Connected to: employee-app-b7215');
-console.log('📁 Path: employees/ | Field: salary');
+console.log('✅ App.js Ready - Connected to employee-app-b7215');
