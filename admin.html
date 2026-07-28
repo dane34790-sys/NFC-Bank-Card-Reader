@@ -5,45 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🔧 Admin Panel</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="app.js"></script>
+    
     <style>
         .form-group { margin-bottom: 12px; }
         .form-label { display: block; color: #ffd700; font-size: 12px; margin-bottom: 5px; font-weight: bold; }
         .form-input { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 15px; box-sizing: border-box; }
-        .form-input:focus { outline: none; border-color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.2); }
-        .form-input::placeholder { color: rgba(255,255,255,0.3); }
-        
-        .form-select {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0,0,0,0.6);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
-            font-size: 15px;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-        
+        .form-input:focus { outline: none; border-color: #ffd700; }
+        .form-select { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 15px; box-sizing: border-box; cursor: pointer; }
         .form-select:focus { outline: none; border-color: #ffd700; }
-        
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }
         .btn:active { transform: scale(0.95); }
         .btn-green { background: #4caf50; color: #fff; }
         .btn-blue { background: #2196f3; color: #fff; }
+        .btn-red { background: #f44336; color: #fff; }
+        .btn-orange { background: #ff9800; color: #fff; }
+        .btn-purple { background: #9c27b0; color: #fff; }
         .status-bar { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; text-align: center; font-size: 13px; margin-top: 15px; }
+        .cloud-badge { background: #2196f3; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 10px; display: inline-block; margin-left: 8px; }
+        .section-title { color: #ffd700; font-size: 13px; font-weight: 700; margin: 15px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,215,0,0.3); }
+        .highlight { background: rgba(255,152,0,0.2); border: 1px solid #ff9800; border-radius: 8px; padding: 8px; margin: 8px 0; color: #ff9800; font-size: 12px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="app-header">
-            <h1 class="app-title">🔧 Admin Panel</h1>
-            <p class="app-subtitle">FILL ALL FIELDS</p>
+            <h1 class="app-title">🔧 Admin Panel <span class="cloud-badge">☁️ Firebase</span></h1>
+            <p class="app-subtitle">REMOTE CARD CONTROL</p>
         </div>
 
         <div class="glass-card">
             
+            <!-- ===== کنترل از راه دور ===== -->
+            <div class="section-title">🎮 Remote Control</div>
+            
             <div class="form-group">
-                <label class="form-label">🌐 Card Status (Online/Offline)</label>
+                <label class="form-label">🆔 Employee ID to Control</label>
+                <input type="text" class="form-input" id="controlEmpId" maxlength="13" placeholder="Enter Employee ID" style="text-align:center; font-size:18px; letter-spacing:3px;">
+            </div>
+            
+            <button class="btn btn-blue" onclick="loadEmployeeData()">
+                📥 Load Employee Data
+            </button>
+            
+            <button class="btn btn-orange" onclick="toggleOnlineOffline()">
+                🔄 Toggle Online/Offline
+            </button>
+            
+            <button class="btn btn-red" onclick="resetRemainderBalance()">
+                💰 Reset Remainder to Zero
+            </button>
+            
+            <button class="btn btn-purple" onclick="addBalance()">
+                ➕ Add €1,000 to Remainder
+            </button>
+            
+            <div id="employeeStatus" class="highlight hidden">
+                <span id="empStatusText">No employee loaded</span>
+            </div>
+            
+            <!-- ===== اطلاعات کارت جدید ===== -->
+            <div class="section-title">💳 New Card Setup</div>
+            
+            <div class="form-group">
+                <label class="form-label">🌐 Card Status</label>
                 <select class="form-select" id="cardStatus">
                     <option value="Online">🟢 Online Card</option>
                     <option value="Offline">🔴 Offline Card</option>
@@ -66,13 +95,13 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">💰 Account Balance</label>
-                <input type="text" class="form-input" id="accountBalance" value="8,538,616">
+                <label class="form-label">💰 Account Balance (ثابت - کم نمیشه)</label>
+                <input type="text" class="form-input" id="accountBalance" value="8,538,616" style="border-color:#4caf50;">
             </div>
             
             <div class="form-group">
-                <label class="form-label">💰 Remainder Balance</label>
-                <input type="text" class="form-input" id="remainderBalance" value="8,538,606">
+                <label class="form-label">💰 Remainder Balance (از این کم میشه)</label>
+                <input type="text" class="form-input" id="remainderBalance" value="8,538,606" style="border-color:#ff9800;">
             </div>
             
             <div class="form-group">
@@ -114,43 +143,125 @@
                 💾 Save & Write to NFC Card
             </button>
             
-            <button class="btn btn-blue" onclick="saveOnly()">
-                📋 Save Data Only
+            <button class="btn btn-blue" onclick="saveToCloud()">
+                ☁️ Save to Firebase Only
             </button>
 
-            <div class="status-bar" id="adminStatus">⏳ Ready</div>
+            <div class="status-bar" id="adminStatus">⏳ Ready - Firebase Connected ☁️</div>
         </div>
     </div>
 
     <script>
-        const DB_NAME = 'BankCardDB';
-        
-        function getDB() {
-            try { const db = localStorage.getItem(DB_NAME); return db ? JSON.parse(db) : {}; }
-            catch(e) { return {}; }
-        }
-        
-        function saveDB(db) {
-            try { localStorage.setItem(DB_NAME, JSON.stringify(db)); }
-            catch(e) { console.error('Save error:', e); }
-        }
-        
-        function saveCardData(empId, data) {
-            const db = getDB();
-            db[empId] = data;
-            saveDB(db);
-            console.log('Saved:', empId, data);
-        }
-        
-        function hashPin(pin) {
-            let h = 0;
-            for (let i = 0; i < pin.length; i++) {
-                h = ((h << 5) - h) + pin.charCodeAt(i) * (i * 7 + 3);
-                h |= 0;
+        // ===== Load Employee Data =====
+        async function loadEmployeeData() {
+            const empId = document.getElementById('controlEmpId').value.trim();
+            
+            if (!empId) { updateStatus('❌ Enter Employee ID first', '#f44336'); return; }
+            
+            updateStatus('📥 Loading from Firebase...', '#2196f3');
+            
+            const data = await getCardData(empId);
+            
+            if (data) {
+                // Fill form with loaded data
+                document.getElementById('cardStatus').value = data.cardStatus || 'Online';
+                document.getElementById('nameBank').value = data.nameBank || '';
+                document.getElementById('accountName').value = data.accountName || '';
+                document.getElementById('cardNumber').value = data.cardNumber || '';
+                document.getElementById('accountBalance').value = data.accountBalance || '0';
+                document.getElementById('remainderBalance').value = data.remainderBalance || '0';
+                document.getElementById('securityKey').value = data.securityKey || '';
+                document.getElementById('zipCode').value = data.zipCode || '';
+                document.getElementById('cvv2').value = data.cvv2 || '';
+                document.getElementById('lineCard').value = data.lineCard || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('empId').value = data.empId || '';
+                
+                // Show status
+                document.getElementById('employeeStatus').classList.remove('hidden');
+                document.getElementById('empStatusText').textContent = 
+                    '✅ ' + data.accountName + ' | Balance: €' + data.accountBalance + 
+                    ' | Remainder: €' + data.remainderBalance + 
+                    ' | Status: ' + data.cardStatus;
+                
+                updateStatus('✅ Employee loaded: ' + data.accountName, '#4caf50');
+            } else {
+                updateStatus('❌ Employee not found in Firebase', '#f44336');
             }
-            return Math.abs(h).toString(36);
         }
         
+        // ===== Toggle Online/Offline =====
+        async function toggleOnlineOffline() {
+            const empId = document.getElementById('controlEmpId').value.trim();
+            if (!empId) { updateStatus('❌ Enter Employee ID first', '#f44336'); return; }
+            
+            updateStatus('🔄 Toggling status...', '#ff9800');
+            
+            const data = await getCardData(empId);
+            if (data) {
+                data.cardStatus = data.cardStatus === 'Online' ? 'Offline' : 'Online';
+                await saveToFirebase(empId, data);
+                
+                document.getElementById('cardStatus').value = data.cardStatus;
+                document.getElementById('employeeStatus').classList.remove('hidden');
+                document.getElementById('empStatusText').textContent = 
+                    '🔄 Status changed to: ' + data.cardStatus + ' | ' + data.accountName;
+                
+                updateStatus('✅ Status toggled to: ' + data.cardStatus, '#4caf50');
+            }
+        }
+        
+        // ===== Reset Remainder to Zero =====
+        async function resetRemainderBalance() {
+            const empId = document.getElementById('controlEmpId').value.trim();
+            if (!empId) { updateStatus('❌ Enter Employee ID first', '#f44336'); return; }
+            
+            if (!confirm('Reset remainder balance to ZERO for this employee?')) return;
+            
+            updateStatus('💰 Resetting remainder...', '#ff9800');
+            
+            const data = await getCardData(empId);
+            if (data) {
+                data.remainderBalance = '0';
+                await saveToFirebase(empId, data);
+                
+                document.getElementById('remainderBalance').value = '0';
+                document.getElementById('employeeStatus').classList.remove('hidden');
+                document.getElementById('empStatusText').textContent = 
+                    '💰 Remainder RESET to €0 | ' + data.accountName;
+                
+                updateStatus('✅ Remainder reset to €0', '#4caf50');
+            }
+        }
+        
+        // ===== Add €1,000 to Remainder =====
+        async function addBalance() {
+            const empId = document.getElementById('controlEmpId').value.trim();
+            if (!empId) { updateStatus('❌ Enter Employee ID first', '#f44336'); return; }
+            
+            updateStatus('💰 Adding €1,000...', '#ff9800');
+            
+            const data = await getCardData(empId);
+            if (data) {
+                let currentRemainder = parseFloat((data.remainderBalance || '0').replace(/[^0-9.]/g, '')) || 0;
+                currentRemainder += 1000;
+                data.remainderBalance = currentRemainder.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                
+                await saveToFirebase(empId, data);
+                
+                document.getElementById('remainderBalance').value = data.remainderBalance;
+                document.getElementById('employeeStatus').classList.remove('hidden');
+                document.getElementById('empStatusText').textContent = 
+                    '➕ €1,000 added | New remainder: €' + data.remainderBalance + ' | ' + data.accountName;
+                
+                updateStatus('✅ €1,000 added! New remainder: €' + data.remainderBalance, '#4caf50');
+            }
+        }
+        
+        // ===== UI Functions =====
         function updateStatus(text, color = '#fff') {
             document.getElementById('adminStatus').textContent = text;
             document.getElementById('adminStatus').style.color = color;
@@ -174,31 +285,32 @@
             };
         }
         
-        function saveOnly() {
+        async function saveToCloud() {
             const data = getFormData();
-            
-            if (!data.nameBank) { updateStatus('❌ Name Bank is required', '#f44336'); return; }
             if (!data.empId || data.empId.length < 10) { updateStatus('❌ Employee ID required', '#f44336'); return; }
             if (!data.pin || data.pin.length !== 4) { updateStatus('❌ PIN must be 4 digits', '#f44336'); return; }
             
             const cardData = { ...data, pinHash: hashPin(data.pin) };
-            saveCardData(data.empId, cardData);
+            updateStatus('☁️ Saving to Firebase...', '#2196f3');
             
-            updateStatus('✅ Data saved! Status: ' + data.cardStatus, '#4caf50');
+            const success = await saveToFirebase(data.empId, cardData);
+            
+            if (success) {
+                updateStatus('✅ Saved to Firebase! ID: ' + data.empId, '#4caf50');
+            } else {
+                updateStatus('❌ Firebase save failed!', '#f44336');
+            }
         }
         
         async function saveAndWrite() {
             const data = getFormData();
-            
-            if (!data.nameBank) { updateStatus('❌ Name Bank is required', '#f44336'); return; }
-            if (!data.accountName) { updateStatus('❌ Account Name is required', '#f44336'); return; }
-            if (!data.cardNumber || data.cardNumber.length < 15) { updateStatus('❌ Card Number required (16 digits)', '#f44336'); return; }
-            if (!data.accountBalance) { updateStatus('❌ Account Balance is required', '#f44336'); return; }
             if (!data.empId || data.empId.length < 10) { updateStatus('❌ Employee ID required', '#f44336'); return; }
             if (!data.pin || data.pin.length !== 4) { updateStatus('❌ PIN must be 4 digits', '#f44336'); return; }
             
             const cardData = { ...data, pinHash: hashPin(data.pin) };
-            saveCardData(data.empId, cardData);
+            
+            updateStatus('☁️ Saving to cloud...', '#2196f3');
+            await saveToFirebase(data.empId, cardData);
             
             updateStatus('📡 Hold card near device...', '#ffd700');
             
@@ -217,20 +329,21 @@
                             ]
                         });
                         
-                        updateStatus('✅ Card written! Status: ' + data.cardStatus, '#4caf50');
+                        updateStatus('✅ Card written + Cloud saved!', '#4caf50');
                     } catch(e) {
                         updateStatus('❌ Write failed! Try again', '#f44336');
                     }
                 };
-                
-                reader.onreadingerror = () => updateStatus('❌ Read error', '#f44336');
-                
             } catch(e) {
                 updateStatus('❌ ' + e.message, '#f44336');
             }
         }
         
-        updateStatus('⏳ Ready', '#fff');
+        updateStatus('⏳ Ready - Firebase Connected ☁️', '#fff');
+        console.log('✅ Admin Panel Ready');
+        console.log('🎮 Remote Control Active');
+        console.log('💰 Remainder Balance = Deductible');
+        console.log('💳 Account Balance = Fixed');
     </script>
 </body>
-  </html>
+</html>
