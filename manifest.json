@@ -1,14 +1,14 @@
 {
   "name": "NFC Bank Card Reader",
   "short_name": "BankCard",
-  "start_url": "/index.html",
+  "start_url": "/NFC-Bank-Card-Reader/index.html",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#ffd700",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "assets/icons/icon-512x512.png",
+      "src": "/NFC-Bank-Card-Reader/assets/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
