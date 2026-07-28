@@ -1,5 +1,5 @@
 // ============================================
-// 🔥 Firebase Configuration
+// 🔥 Firebase - employee-app-b7215
 // ============================================
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
@@ -14,35 +14,28 @@ const FIREBASE_CONFIG = {
 firebase.initializeApp(FIREBASE_CONFIG);
 const database = firebase.database();
 
-console.log('🔥 Firebase connected');
+console.log('🔥 Firebase URL:', database.ref().toString());
 
 // ============================================
-// 📥 Get Card Data - فقط از Firebase
+// 📥 Get Card Data
 // ============================================
 async function getCardData(empId) {
     try {
         const snapshot = await database.ref('employees/' + empId).once('value');
-        const data = snapshot.val();
-        
-        if (data) {
-            console.log('☁️ Loaded from Firebase:', empId);
-            return data;
-        }
+        return snapshot.val();
     } catch(e) {
-        console.error('Firebase error:', e);
+        console.error('Error:', e);
+        return null;
     }
-    
-    return null;
 }
 
 // ============================================
-// 💰 Deduct €1.00 - مستقیم توی Firebase
+// 💰 Deduct €1.00
 // ============================================
 async function deductOneEuro(empId, currentData) {
     let salaryStr = currentData.salary || '0€';
     salaryStr = salaryStr.replace(/[^0-9.]/g, '');
     let salary = parseFloat(salaryStr) || 0;
-    
     salary = Math.max(0, salary - 1);
     
     const newSalary = salary.toLocaleString('en-US', {
@@ -50,23 +43,10 @@ async function deductOneEuro(empId, currentData) {
         maximumFractionDigits: 2
     }) + '€';
     
-    // مستقیم توی Firebase آپدیت کن
-    try {
-        await database.ref('employees/' + empId).update({
-            salary: newSalary,
-            lastAccessed: new Date().toISOString()
-        });
-        console.log('💰 €1.00 deducted from Firebase. New salary: ' + newSalary);
-    } catch(e) {
-        console.error('Firebase update error:', e);
-    }
+    await database.ref('employees/' + empId).update({ salary: newSalary });
+    console.log('💰 Deducted. New salary:', newSalary);
     
-    // داده جدید رو برگردون
-    return {
-        ...currentData,
-        salary: newSalary,
-        lastAccessed: new Date().toISOString()
-    };
+    return { ...currentData, salary: newSalary };
 }
 
 // ============================================
@@ -81,4 +61,4 @@ function hashPin(pin) {
     return Math.abs(h).toString(36);
 }
 
-console.log('✅ App.js Ready - Direct Firebase Mode');
+console.log('✅ Ready - employee-app-b7215');
