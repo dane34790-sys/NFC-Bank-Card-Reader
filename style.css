@@ -1,0 +1,596 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #0a0a0a 0%, #0d1b2a 50%, #1b2838 100%);
+  color: #fff;
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(255,215,0,0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(33,150,243,0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(76,175,80,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ===== کارت شیشه‌ای ===== */
+.glass-card {
+  background: rgba(26, 26, 46, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 24px;
+  padding: 25px;
+  margin: 15px 0;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ===== کادر اطلاعات شیشه‌ای دورنگ ===== */
+#fullInfo {
+  background: rgba(20, 20, 40, 0.75) !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 2px solid transparent !important;
+  border-image: linear-gradient(135deg, #ffd700, #4caf50) 1 !important;
+  border-radius: 20px !important;
+  padding: 20px !important;
+  margin: 15px 0 !important;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 20px rgba(255, 215, 0, 0.1),
+    0 0 40px rgba(76, 175, 80, 0.05) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+#fullInfo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(76, 175, 80, 0.05));
+  pointer-events: none;
+  z-index: 0;
+}
+
+#fullInfo h3 {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #ffd700, #4caf50);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  text-shadow: none;
+}
+
+#infoContent {
+  position: relative;
+  z-index: 1;
+  color: #e0e0e0 !important;
+  font-family: 'Courier New', monospace;
+  white-space: pre-line;
+  font-size: 13px;
+  line-height: 2;
+  padding: 10px;
+}
+
+/* رنگ‌های مختلف برای خطوط */
+#infoContent::first-line {
+  color: #ffd700 !important;
+  font-weight: bold;
+}
+
+/* ===== هدر ===== */
+.app-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.app-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  letter-spacing: 1px;
+}
+
+.app-subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 5px;
+  letter-spacing: 2px;
+}
+
+/* ===== انیمیشن‌ها ===== */
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+  50% { text-shadow: 0 0 30px rgba(255, 215, 0, 0.9), 0 0 60px rgba(255, 215, 0, 0.3); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes ripple {
+  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+  100% { box-shadow: 0 0 0 20px rgba(255, 215, 0, 0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.glow-text {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.blink-text {
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+.pulse-icon {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ===== NFC Reader ===== */
+.nfc-area {
+  text-align: center;
+  padding: 40px 25px;
+  border: 3px dashed rgba(255, 215, 0, 0.5);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.nfc-area:active {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.08);
+  animation: ripple 0.6s ease-out;
+}
+
+.nfc-text {
+  color: #ffd700;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-top: 5px;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.nfc-hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  margin-top: 8px;
+  letter-spacing: 1px;
+}
+
+/* ===== صفحه پین ===== */
+.pin-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(15px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pin-dialog {
+  background: rgba(26, 26, 46, 0.9);
+  backdrop-filter: blur(30px);
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: 24px;
+  padding: 30px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s ease;
+}
+
+.pin-title {
+  color: #ffd700;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.pin-dots {
+  font-size: 45px;
+  letter-spacing: 12px;
+  color: #ffd700;
+  margin: 20px 0;
+  min-height: 50px;
+}
+
+.pin-keypad {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.pin-key {
+  padding: 16px;
+  font-size: 22px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffd700;
+  border: 1.5px solid rgba(255, 215, 0, 0.4);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(5px);
+}
+
+.pin-key:active {
+  background: rgba(255, 215, 0, 0.2);
+  transform: scale(0.9);
+  border-color: #ffd700;
+}
+
+.pin-key.clear {
+  border-color: rgba(244, 67, 54, 0.5);
+  color: #f44336;
+}
+
+.pin-key.enter {
+  border-color: rgba(76, 175, 80, 0.5);
+  color: #4caf50;
+}
+
+.pin-cancel {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  background: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+}
+/* ===== کارت بانکی واقعی ===== */
+.bank-card {
+  background: linear-gradient(135deg, #1a1a4e 0%, #0d0d2b 100%);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 20px;
+  padding: 25px;
+  margin: 15px 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* طرح‌های پس‌زمینه کارت */
+.bank-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -30%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.bank-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  left: -10%;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(33, 150, 243, 0.05) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+/* خطوط طرح کارت */
+.card-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.01) 10px,
+      rgba(255, 255, 255, 0.01) 20px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mastercard-logo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.mc-circle-red {
+  width: 28px;
+  height: 28px;
+  background: #eb001b;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+}
+
+.mc-circle-yellow {
+  width: 28px;
+  height: 28px;
+  background: #f79e1b;
+  border-radius: 50%;
+  margin-left: -10px;
+  position: relative;
+  z-index: 1;
+}
+
+.bank-logo {
+  color: #ffd700;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: right;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+  letter-spacing: 1px;
+}
+
+/* ===== چیپ طلایی ===== */
+.chip-icon {
+  width: 45px;
+  height: 35px;
+  margin: 12px 0;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #d4af37 0%, #f0d060 30%, #c9a030 50%, #f0d060 70%, #d4af37 100%);
+  border-radius: 6px;
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -1px 0 rgba(0,0,0,0.2),
+    0 2px 5px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+.chip-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent);
+  border-radius: 2px;
+}
+
+.chip-icon::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+}
+
+/* خطوط چیپ */
+.chip-lines {
+  position: absolute;
+  top: 20%;
+  left: 15%;
+  width: 30%;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 2;
+}
+
+.chip-line {
+  width: 100%;
+  height: 2px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 1px;
+}
+
+.chip-contact {
+  position: absolute;
+  top: 20%;
+  right: 15%;
+  width: 30%;
+  height: 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 2;
+}
+
+.chip-dot {
+  width: 4px;
+  height: 4px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 50%;
+}
+
+.card-number {
+  font-size: 18px;
+  letter-spacing: 4px;
+  margin: 15px 0;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.card-holder {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+}
+
+.balance-display {
+  color: #4caf50;
+  font-size: 26px;
+  font-weight: 700;
+  margin: 15px 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== دکمه‌ها ===== */
+.btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+}
+
+/* ===== استاتوس ===== */
+.status-bar {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  font-size: 14px;
+  margin: 10px 0;
+}
+
+/* ===== نوتیفیکیشن ===== */
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(30px);
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  padding: 20px;
+  z-index: 9999;
+  animation: slideDown 0.5s ease;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-120%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.notif-balance {
+  color: #4caf50;
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin: 10px 0;
+}
+
+/* ===== کلاس‌های کمکی ===== */
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.mt-10 { margin-top: 10px; }
+.mt-20 { margin-top: 20px; }
