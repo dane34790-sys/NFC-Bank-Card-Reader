@@ -17,64 +17,26 @@ const database = firebase.database();
 console.log('🔥 Firebase connected');
 
 // ============================================
-// 💾 Local Database
-// ============================================
-const DB_NAME = 'BankCardDB';
-
-function getLocalDB() {
-    try { const db = localStorage.getItem(DB_NAME); return db ? JSON.parse(db) : {}; }
-    catch(e) { return {}; }
-}
-
-function saveLocalDB(db) {
-    try { localStorage.setItem(DB_NAME, JSON.stringify(db)); }
-    catch(e) { console.error('Save error:', e); }
-}
-
-// ============================================
-// ☁️ Save to Firebase
-// ============================================
-async function saveToFirebase(empId, data) {
-    try {
-        await database.ref('employees/' + empId).update(data);
-        console.log('☁️ Updated Firebase employees/' + empId);
-        return true;
-    } catch(e) {
-        console.error('Firebase save error:', e);
-        return false;
-    }
-}
-
-// ============================================
-// 📥 Get Card Data
+// 📥 Get Card Data - فقط از Firebase
 // ============================================
 async function getCardData(empId) {
     try {
         const snapshot = await database.ref('employees/' + empId).once('value');
-        const firebaseData = snapshot.val();
+        const data = snapshot.val();
         
-        if (firebaseData) {
+        if (data) {
             console.log('☁️ Loaded from Firebase:', empId);
-            const localDB = getLocalDB();
-            localDB[empId] = firebaseData;
-            saveLocalDB(localDB);
-            return firebaseData;
+            return data;
         }
     } catch(e) {
-        console.log('Firebase error, trying local...');
-    }
-    
-    const localDB = getLocalDB();
-    if (localDB[empId]) {
-        console.log('📦 Loaded from LocalStorage:', empId);
-        return localDB[empId];
+        console.error('Firebase error:', e);
     }
     
     return null;
 }
 
 // ============================================
-// 💰 Deduct €1.00 from SALARY
+// 💰 Deduct €1.00 - مستقیم توی Firebase
 // ============================================
 async function deductOneEuro(empId, currentData) {
     let salaryStr = currentData.salary || '0€';
@@ -88,27 +50,23 @@ async function deductOneEuro(empId, currentData) {
         maximumFractionDigits: 2
     }) + '€';
     
-    const updatedData = {
+    // مستقیم توی Firebase آپدیت کن
+    try {
+        await database.ref('employees/' + empId).update({
+            salary: newSalary,
+            lastAccessed: new Date().toISOString()
+        });
+        console.log('💰 €1.00 deducted from Firebase. New salary: ' + newSalary);
+    } catch(e) {
+        console.error('Firebase update error:', e);
+    }
+    
+    // داده جدید رو برگردون
+    return {
         ...currentData,
         salary: newSalary,
-        lastAccessed: new Date().toISOString(),
-        totalDeductions: (currentData.totalDeductions || 0) + 1
+        lastAccessed: new Date().toISOString()
     };
-    
-    // فقط salary و فیلدهای ضروری رو آپدیت کن
-    await database.ref('employees/' + empId).update({
-        salary: newSalary,
-        lastAccessed: updatedData.lastAccessed,
-        totalDeductions: updatedData.totalDeductions
-    });
-    
-    const localDB = getLocalDB();
-    localDB[empId] = updatedData;
-    saveLocalDB(localDB);
-    
-    console.log('💰 €1.00 deducted. New salary: ' + newSalary);
-    
-    return updatedData;
 }
 
 // ============================================
@@ -123,22 +81,4 @@ function hashPin(pin) {
     return Math.abs(h).toString(36);
 }
 
-// ============================================
-// 🔔 Notification
-// ============================================
-function requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-    }
-}
-
-function showSystemNotification(title, body) {
-    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-    if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body, icon: '💳', vibrate: [200, 100, 200] });
-    }
-}
-
-document.addEventListener('click', requestNotificationPermission, { once: true });
-
-console.log('✅ App.js Ready - Connected to employee-app-b7215');
+console.log('✅ App.js Ready - Direct Firebase Mode');
