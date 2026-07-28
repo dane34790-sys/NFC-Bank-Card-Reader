@@ -1,0 +1,17 @@
+{
+  "name": "Commerzbank Card Reader",
+  "short_name": "BankCard",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ffd700",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1a2e'/><text y='.75em' x='50' text-anchor='middle' font-size='60'>💳</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
