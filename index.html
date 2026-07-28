@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💳 Visa & Mastercard NFC</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffd700">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        /* ===== کادر NFC بزرگ ===== */
+        .nfc-area {
+            text-align: center;
+            padding: 40px 25px;
+            border: 3px dashed rgba(255, 215, 0, 0.5);
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nfc-area:active {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.08);
+            animation: ripple 0.6s ease-out;
+        }
+        
+        /* انیمیشن کارت و گوشی */
+        .card-phone-animation {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+        }
+        
+        .phone-icon {
+            font-size: 100px;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+        }
+        
+        .card-icon {
+            font-size: 65px;
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: tapCardAnim 1.8s ease-in-out infinite;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4));
+        }
+        
+        @keyframes tapCardAnim {
+            0% { 
+                transform: translateX(-50%) translateY(0) rotate(-10deg); 
+                opacity: 1; 
+            }
+            30% { 
+                transform: translateX(-50%) translateY(40px) rotate(-3deg); 
+                opacity: 1; 
+            }
+            45% { 
+                transform: translateX(-50%) translateY(45px) rotate(0deg); 
+                opacity: 0.7; 
+            }
+            55% { 
+                transform: translateX(-50%) translateY(45px) rotate(0deg); 
+                opacity: 0.7; 
+            }
+            70% { 
+                transform: translateX(-50%) translateY(40px) rotate(3deg); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translateX(-50%) translateY(0) rotate(-10deg); 
+                opacity: 1; 
+            }
+        }
+        
+        /* امواج NFC */
+        .nfc-waves {
+            position: absolute;
+            top: 58%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+        }
+        
+        .wave {
+            position: absolute;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-radius: 50%;
+            animation: waveExpand 2.5s infinite;
+        }
+        
+        .wave:nth-child(1) { animation-delay: 0s; }
+        .wave:nth-child(2) { animation-delay: 0.6s; }
+        .wave:nth-child(3) { animation-delay: 1.2s; }
+        
+        @keyframes waveExpand {
+            0% { 
+                width: 30px; height: 30px; opacity: 0.8; 
+                top: 50%; left: 50%; 
+                transform: translate(-50%, -50%); 
+            }
+            100% { 
+                width: 150px; height: 150px; opacity: 0; 
+                top: 50%; left: 50%; 
+                transform: translate(-50%, -50%); 
+            }
+        }
+        
+        /* متن‌ها */
+        .nfc-text {
+            color: #ffd700;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-top: 5px;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .nfc-hint {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+        
+        /* افکت hover */
+        .nfc-area:hover {
+            border-color: rgba(255, 215, 0, 0.8);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- Header -->
+        <div class="app-header">
+            <h1 class="app-title glow-text">💳 NFC Reader</h1>
+            <p class="app-subtitle">Visa and Mastercard NFC</p>
+        </div>
+
+        <!-- NFC Area - بزرگ و حرفه‌ای -->
+        <div class="glass-card nfc-area" id="nfcArea" onclick="startReading()">
+            <!-- امواج NFC -->
+            <div class="nfc-waves">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+            
+            <!-- انیمیشن کارت در حال زدن به گوشی -->
+            <div class="card-phone-animation">
+                <span class="card-icon">💳</span>
+                <span class="phone-icon">📱</span>
+            </div>
+            
+            <p class="nfc-text glow-text">Tap Card on Phone</p>
+            <p class="nfc-hint">HOLD YOUR CARD NEAR THE NFC ANTENNA</p>
+        </div>
+
+        <!-- Status -->
+        <div class="status-bar" id="statusBar">
+            <span id="statusText">🔒 Ready to Scan</span>
+        </div>
+
+      <!-- Bank Card Preview -->
+<div id="bankCard" class="bank-card hidden">
+    <div class="card-pattern"></div>
+    <div class="mastercard-logo">
+        <div class="mc-circle-red"></div>
+        <div class="mc-circle-yellow"></div>
+    </div>
+    <div id="cardStatusBadge" style="text-align:right; margin-bottom:8px; position:relative; z-index:1;">
+        <span id="cardStatusText" style="font-size:11px; font-weight:bold; padding:4px 12px; border-radius:15px;"></span>
+    </div>
+    <!-- چیپ طلایی -->
+    <div class="chip-icon" style="position:relative; z-index:1;">
+        <div class="chip-lines">
+            <div class="chip-line"></div>
+            <div class="chip-line"></div>
+            <div class="chip-line"></div>
+        </div>
+        <div class="chip-contact">
+            <div class="chip-dot"></div>
+            <div class="chip-dot"></div>
+            <div class="chip-dot"></div>
+        </div>
+    </div>
+    <div class="bank-logo" id="bankName">COMMERZBANK</div>
+    <div class="card-number" id="cardNumberDisplay">•••• •••• •••• 0000</div>
+    <div class="card-holder" id="cardHolder">---</div>
+    <div class="balance-display" id="balanceDisplay">€0</div>
+</div>
+
+        <!-- Full Card Info -->
+        <div id="fullInfo" class="glass-card hidden">
+            <h3 style="color:#ffd700; margin-bottom:15px; text-align:center;">📋 Card Information</h3>
+            <div id="infoContent" style="color:#0f0; font-family:monospace; white-space:pre-line; font-size:13px; line-height:1.8;"></div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div id="notification" class="notification-toast hidden">
+            <p style="color:#ffd700; text-align:center;">🏦 COMMERZBANK</p>
+            <div class="notif-balance" id="notifBalance">€0</div>
+            <p style="color:#aaa; text-align:center; font-size:12px;">Account Balance</p>
+        </div>
+    </div>
+
+    <!-- PIN Overlay -->
+    <div id="pinOverlay" class="pin-overlay hidden">
+        <div class="pin-dialog">
+            <h3 class="pin-title glow-text">🔐 Enter PIN</h3>
+            <p style="color:#aaa; font-size:13px; margin-bottom:10px;">Enter your 4-digit PIN</p>
+            <div class="pin-dots" id="pinDots">○○○○</div>
+            <div class="pin-keypad" id="pinKeypad"></div>
+            <button class="pin-cancel" onclick="closePin()">❌ Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const DB_NAME = 'BankCardDB';
+        
+        function getDB() {
+            try { const db = localStorage.getItem(DB_NAME); return db ? JSON.parse(db) : {}; }
+            catch(e) { return {}; }
+        }
+        
+        function getCardData(empId) {
+            const db = getDB();
+            return db[empId] || null;
+        }
+        
+        function hashPin(pin) {
+            let h = 0;
+            for (let i = 0; i < pin.length; i++) {
+                h = ((h << 5) - h) + pin.charCodeAt(i) * (i * 7 + 3);
+                h |= 0;
+            }
+            return Math.abs(h).toString(36);
+        }
+        
+        document.addEventListener('click', () => {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }, { once: true });
+
+        let userPin = '';
+        let currentEmpId = null;
+
+        function updateStatus(text, color = '#fff') {
+            document.getElementById('statusText').textContent = text;
+            document.getElementById('statusText').style.color = color;
+        }
+
+        function showPinDialog() {
+            document.getElementById('pinOverlay').classList.remove('hidden');
+            userPin = '';
+            const keypad = document.getElementById('pinKeypad');
+            const keys = [1,2,3,4,5,6,7,8,9,'⌫',0,'✓'];
+            keypad.innerHTML = keys.map(k => {
+                let cls = 'pin-key';
+                if (k === '⌫') cls += ' clear';
+                if (k === '✓') cls += ' enter';
+                return `<button class="${cls}" onclick="pressPinKey('${k}')">${k}</button>`;
+            }).join('');
+            updatePinDots();
+        }
+
+        function pressPinKey(key) {
+            if (key === '⌫') userPin = userPin.slice(0, -1);
+            else if (key === '✓') { if (userPin.length === 4) verifyPin(); return; }
+            else if (userPin.length < 4) userPin += key;
+            updatePinDots();
+        }
+
+        function updatePinDots() {
+            document.getElementById('pinDots').textContent = '●'.repeat(userPin.length) + '○'.repeat(4 - userPin.length);
+        }
+
+        function verifyPin() {
+            const cardData = getCardData(currentEmpId);
+            if (!cardData || hashPin(userPin) !== cardData.pinHash) {
+                updateStatus('❌ Wrong PIN!', '#f44336');
+                userPin = '';
+                updatePinDots();
+                return;
+            }
+            closePin();
+            showCardInfo(cardData);
+            showInternalNotification(cardData);
+            updateStatus('✅ Access Granted', '#4caf50');
+        }
+
+        function closePin() {
+            document.getElementById('pinOverlay').classList.add('hidden');
+            userPin = '';
+        }
+
+        function showCardInfo(data) {
+    // وضعیت آنلاین/آفلاین
+    const statusText = document.getElementById('cardStatusText');
+    if (data.cardStatus === 'Online') {
+        statusText.textContent = '🟢 ONLINE CARD';
+        statusText.style.background = 'rgba(76,175,80,0.2)';
+        statusText.style.color = '#4caf50';
+        statusText.style.border = '1px solid #4caf50';
+    } else {
+        statusText.textContent = '🔴 OFFLINE CARD';
+        statusText.style.background = 'rgba(244,67,54,0.2)';
+        statusText.style.color = '#f44336';
+        statusText.style.border = '1px solid #f44336';
+    }
+    
+    document.getElementById('bankName').textContent = (data.nameBank || 'COMMERZBANK').toUpperCase();
+    document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ' + (data.cardNumber || '0000').slice(-4);
+    document.getElementById('cardHolder').textContent = (data.accountName || 'UNKNOWN').toUpperCase();
+    document.getElementById('balanceDisplay').textContent = '€' + (data.accountBalance || '0');
+    document.getElementById('bankCard').classList.remove('hidden');
+    
+    // ساخت HTML با رنگ‌های مختلف
+    let info = '';
+    info += '<div style="color:#ffd700; margin-bottom:3px;">🌐 Status: <span style="color:#4caf50;">' + (data.cardStatus || 'N/A') + '</span></div>';
+    if (data.nameBank) info += '<div style="color:#ffd700; margin-bottom:3px;">Name Bank: <span style="color:#4caf50;">' + data.nameBank + '</span></div>';
+    if (data.accountName) info += '<div style="color:#ffd700; margin-bottom:3px;">Account Name: <span style="color:#4caf50;">' + data.accountName + '</span></div>';
+    if (data.cardNumber) info += '<div style="color:#ffd700; margin-bottom:3px;">Card Number: <span style="color:#4caf50;">' + data.cardNumber + '</span></div>';
+    if (data.accountBalance) info += '<div style="color:#ffd700; margin-bottom:3px;">Account Balance: <span style="color:#4caf50;">€' + data.accountBalance + '</span></div>';
+    if (data.remainderBalance) info += '<div style="color:#ffd700; margin-bottom:3px;">Remainder Balance: <span style="color:#4caf50;">€' + data.remainderBalance + '</span></div>';
+    if (data.securityKey) info += '<div style="color:#ffd700; margin-bottom:3px;">Security Key: <span style="color:#4caf50;">' + data.securityKey + '</span></div>';
+    if (data.zipCode) info += '<div style="color:#ffd700; margin-bottom:3px;">Zip Code: <span style="color:#4caf50;">' + data.zipCode + '</span></div>';
+    if (data.cvv2) info += '<div style="color:#ffd700; margin-bottom:3px;">Cvv2: <span style="color:#4caf50;">' + data.cvv2 + '</span></div>';
+    if (data.lineCard) info += '<div style="color:#ffd700; margin-bottom:3px;">Line Card: <span style="color:#4caf50;">' + data.lineCard + '</span></div>';
+    if (data.phone) info += '<div style="color:#ffd700; margin-bottom:3px;">Phone: <span style="color:#4caf50;">' + data.phone + '</span></div>';
+    if (data.empId) info += '<div style="color:#ffd700; margin-bottom:3px;">Employee ID: <span style="color:#4caf50;">' + data.empId + '</span></div>';
+    
+    document.getElementById('infoContent').innerHTML = info || '<span style="color:#ffd700;">No data found</span>';
+    document.getElementById('fullInfo').classList.remove('hidden');
+}
+
+        function showInternalNotification(data) {
+            document.getElementById('notifBalance').textContent = '€' + (data.accountBalance || '0');
+            const notif = document.getElementById('notification');
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 6000);
+        }
+
+        async function startReading() {
+            hideAll();
+            updateStatus('📡 Tap card...', '#ffd700');
+            try {
+                const reader = new NDEFReader();
+                await reader.scan();
+                reader.onreading = (e) => {
+                    if (!e.message?.records) { updateStatus('Empty card', '#2196f3'); return; }
+                    let isBankCard = false;
+                    for (let r of e.message.records) {
+                        if (r.recordType !== 'text') continue;
+                        let t = new TextDecoder().decode(r.data);
+                        if (t === 'Mastercard_Commerzbank') isBankCard = true;
+                        if (t.startsWith('?') && t.endsWith(';')) {
+                            currentEmpId = t.substring(1, t.length - 1).split('=')[0];
+                        }
+                    }
+                    if (!isBankCard || !currentEmpId) { updateStatus('❌ Invalid card', '#f44336'); return; }
+                    const cardData = getCardData(currentEmpId);
+                    if (!cardData) { updateStatus('❌ Data not found', '#f44336'); return; }
+                    updateStatus('🔐 Enter PIN', '#ffd700');
+                    showPinDialog();
+                };
+            } catch(err) { updateStatus('Error: ' + err.message, '#f44336'); }
+        }
+
+        function hideAll() {
+            document.getElementById('bankCard').classList.add('hidden');
+            document.getElementById('fullInfo').classList.add('hidden');
+        }
+
+        updateStatus('🔒 Ready to Scan', '#fff');
+    </script>
+</body>
+  </html>
