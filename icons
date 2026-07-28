@@ -1,3 +1,0 @@
-touch icons/.keep
-git add icons/.keep
-git commit -m "add icons folder"
