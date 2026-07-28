@@ -1,5 +1,5 @@
 {
-  "name": "Commerzbank Card Reader",
+  "name": "NFC Bank Card Reader",
   "short_name": "BankCard",
   "start_url": "/index.html",
   "display": "standalone",
@@ -8,9 +8,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a1a2e'/><text y='.75em' x='50' text-anchor='middle' font-size='60'>💳</text></svg>",
+      "src": "assets/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
