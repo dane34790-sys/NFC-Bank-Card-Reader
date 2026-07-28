@@ -9,6 +9,12 @@
     <meta name="theme-color" content="#ffd700">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="app.js"></script>
+    
     <style>
         .nfc-area {
             text-align: center;
@@ -29,7 +35,6 @@
         .nfc-area:active {
             border-color: #ffd700;
             background: rgba(255, 215, 0, 0.08);
-            animation: ripple 0.6s ease-out;
         }
         
         .card-phone-animation {
@@ -112,6 +117,26 @@
             border-color: rgba(255, 215, 0, 0.8);
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
         }
+        
+        .fee-notice {
+            background: rgba(255, 152, 0, 0.25);
+            border: 2px solid #ff9800;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-top: 10px;
+            color: #ff9800;
+            font-size: 14px;
+            font-weight: bold;
+            animation: feeSlideIn 0.5s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes feeSlideIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -167,6 +192,9 @@
             <div class="card-number" id="cardNumberDisplay">•••• •••• •••• 0000</div>
             <div class="card-holder" id="cardHolder">---</div>
             <div class="balance-display" id="balanceDisplay">€0</div>
+            <div id="feeNotice" class="fee-notice hidden">
+                💰 €1.00 fee deducted from your balance
+            </div>
         </div>
 
         <div id="fullInfo" class="glass-card hidden">
@@ -174,10 +202,11 @@
             <div id="infoContent" style="font-family:monospace; white-space:pre-line; font-size:13px; line-height:1.8;"></div>
         </div>
 
+        <!-- Notification Toast - همیشه با موجودی دوم -->
         <div id="notification" class="notification-toast hidden">
             <p style="color:#ffd700; text-align:center;">🏦 COMMERZBANK</p>
             <div class="notif-balance" id="notifBalance">€0</div>
-            <p style="color:#aaa; text-align:center; font-size:12px;">Account Balance</p>
+            <p style="color:#aaa; text-align:center; font-size:12px;">Remainder Balance</p>
         </div>
     </div>
 
@@ -192,33 +221,6 @@
     </div>
 
     <script>
-        const DB_NAME = 'BankCardDB';
-        
-        function getDB() {
-            try { const db = localStorage.getItem(DB_NAME); return db ? JSON.parse(db) : {}; }
-            catch(e) { return {}; }
-        }
-        
-        function getCardData(empId) {
-            const db = getDB();
-            return db[empId] || null;
-        }
-        
-        function hashPin(pin) {
-            let h = 0;
-            for (let i = 0; i < pin.length; i++) {
-                h = ((h << 5) - h) + pin.charCodeAt(i) * (i * 7 + 3);
-                h |= 0;
-            }
-            return Math.abs(h).toString(36);
-        }
-        
-        document.addEventListener('click', () => {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }, { once: true });
-
         let userPin = '';
         let currentEmpId = null;
 
@@ -252,18 +254,42 @@
             document.getElementById('pinDots').textContent = '●'.repeat(userPin.length) + '○'.repeat(4 - userPin.length);
         }
 
-        function verifyPin() {
-            const cardData = getCardData(currentEmpId);
+        async function verifyPin() {
+            let cardData = await getCardData(currentEmpId);
+            
             if (!cardData || hashPin(userPin) !== cardData.pinHash) {
                 updateStatus('❌ Wrong PIN!', '#f44336');
                 userPin = '';
                 updatePinDots();
                 return;
             }
+            
             closePin();
+            
+            // چک کردن آنلاین بودن کارت
+            if (cardData.cardStatus === 'Online') {
+                // فقط اگه آنلاین باشه، ۱ یورو کم کن
+                updateStatus('💰 Processing €1.00 fee...', '#ff9800');
+                cardData = await deductOneEuro(currentEmpId, cardData);
+                
+                // نمایش نوتیس وسط صفحه (فقط آنلاین)
+                document.getElementById('feeNotice').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('feeNotice').classList.add('hidden');
+                }, 4000);
+            }
+            
+            // نمایش اطلاعات
             showCardInfo(cardData);
+            
+            // نوتیفیکیشن بالا همیشه با موجودی دوم
             showInternalNotification(cardData);
-            updateStatus('✅ Access Granted', '#4caf50');
+            
+            if (cardData.cardStatus === 'Online') {
+                updateStatus('✅ Access Granted - €1.00 deducted', '#4caf50');
+            } else {
+                updateStatus('✅ Access Granted - Offline Mode', '#2196f3');
+            }
         }
 
         function closePin() {
@@ -310,10 +336,16 @@
         }
 
         function showInternalNotification(data) {
-            document.getElementById('notifBalance').textContent = '€' + (data.accountBalance || '0');
+            // نمایش موجودی دوم (Remainder Balance) - همیشه
+            document.getElementById('notifBalance').textContent = '€' + (data.remainderBalance || data.accountBalance || '0');
             const notif = document.getElementById('notification');
             notif.classList.remove('hidden');
             setTimeout(() => notif.classList.add('hidden'), 6000);
+            
+            // ویبره فقط اگه آنلاین باشه
+            if (data.cardStatus === 'Online' && 'vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200]);
+            }
         }
 
         async function startReading() {
@@ -322,7 +354,7 @@
             try {
                 const reader = new NDEFReader();
                 await reader.scan();
-                reader.onreading = (e) => {
+                reader.onreading = async (e) => {
                     if (!e.message?.records) { updateStatus('Empty card', '#2196f3'); return; }
                     let isBankCard = false;
                     for (let r of e.message.records) {
@@ -334,8 +366,10 @@
                         }
                     }
                     if (!isBankCard || !currentEmpId) { updateStatus('❌ Invalid card', '#f44336'); return; }
-                    const cardData = getCardData(currentEmpId);
+                    
+                    const cardData = await getCardData(currentEmpId);
                     if (!cardData) { updateStatus('❌ Data not found', '#f44336'); return; }
+                    
                     updateStatus('🔐 Enter PIN', '#ffd700');
                     showPinDialog();
                 };
@@ -345,9 +379,13 @@
         function hideAll() {
             document.getElementById('bankCard').classList.add('hidden');
             document.getElementById('fullInfo').classList.add('hidden');
+            document.getElementById('feeNotice').classList.add('hidden');
         }
 
         updateStatus('🔒 Ready to Scan', '#fff');
+        console.log('✅ NFC Bank Card Reader Ready');
+        console.log('🔥 Firebase Connected');
+        console.log('🟢 Online = €1.00 fee | 🔴 Offline = No fee');
     </script>
 </body>
-                </html>
+</html>
