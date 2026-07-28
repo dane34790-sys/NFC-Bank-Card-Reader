@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .form-group { margin-bottom: 12px; }
+        .form-label { display: block; color: #ffd700; font-size: 12px; margin-bottom: 5px; font-weight: bold; }
+        .form-input { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 15px; box-sizing: border-box; }
+        .form-input:focus { outline: none; border-color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.2); }
+        .form-input::placeholder { color: rgba(255,255,255,0.3); }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 15px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        
+        .form-select:focus { outline: none; border-color: #ffd700; }
+        
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn:active { transform: scale(0.95); }
+        .btn-green { background: #4caf50; color: #fff; }
+        .btn-blue { background: #2196f3; color: #fff; }
+        .status-bar { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; text-align: center; font-size: 13px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-header">
+            <h1 class="app-title">🔧 Admin Panel</h1>
+            <p class="app-subtitle">FILL ALL FIELDS</p>
+        </div>
+
+        <div class="glass-card">
+            
+            <div class="form-group">
+                <label class="form-label">🌐 Card Status (Online/Offline)</label>
+                <select class="form-select" id="cardStatus">
+                    <option value="Online">🟢 Online Card</option>
+                    <option value="Offline">🔴 Offline Card</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">🏛️ Name Bank</label>
+                <input type="text" class="form-input" id="nameBank" value="Commerzbank">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">👤 Account Name</label>
+                <input type="text" class="form-input" id="accountName" value="Mazdak Monshizadeh">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">💳 Card Number</label>
+                <input type="text" class="form-input" id="cardNumber" maxlength="16" value="5232242096782922">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">💰 Account Balance</label>
+                <input type="text" class="form-input" id="accountBalance" value="8,538,616">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">💰 Remainder Balance</label>
+                <input type="text" class="form-input" id="remainderBalance" value="8,538,606">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">🔑 Security Key</label>
+                <input type="text" class="form-input" id="securityKey" value="Delta789032Delta">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">📍 Zip Code</label>
+                <input type="text" class="form-input" id="zipCode" value="De65590">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">🔒 Cvv2</label>
+                <input type="text" class="form-input" id="cvv2" maxlength="4" value="522">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">📋 Line Card</label>
+                <input type="text" class="form-input" id="lineCard" value="Hannover5690">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">📞 Phone Number</label>
+                <input type="text" class="form-input" id="phone" value="+989920872851">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">🆔 Employee ID</label>
+                <input type="text" class="form-input" id="empId" maxlength="13" value="1111111111111">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">🔐 PIN (4 digits)</label>
+                <input type="text" class="form-input" id="pin" maxlength="4" value="1234" style="letter-spacing:10px; font-size:20px;">
+            </div>
+
+            <button class="btn btn-green" onclick="saveAndWrite()">
+                💾 Save & Write to NFC Card
+            </button>
+            
+            <button class="btn btn-blue" onclick="saveOnly()">
+                📋 Save Data Only
+            </button>
+
+            <div class="status-bar" id="adminStatus">⏳ Ready</div>
+        </div>
+    </div>
+
+    <script>
+        const DB_NAME = 'BankCardDB';
+        
+        function getDB() {
+            try { const db = localStorage.getItem(DB_NAME); return db ? JSON.parse(db) : {}; }
+            catch(e) { return {}; }
+        }
+        
+        function saveDB(db) {
+            try { localStorage.setItem(DB_NAME, JSON.stringify(db)); }
+            catch(e) { console.error('Save error:', e); }
+        }
+        
+        function saveCardData(empId, data) {
+            const db = getDB();
+            db[empId] = data;
+            saveDB(db);
+            console.log('Saved:', empId, data);
+        }
+        
+        function hashPin(pin) {
+            let h = 0;
+            for (let i = 0; i < pin.length; i++) {
+                h = ((h << 5) - h) + pin.charCodeAt(i) * (i * 7 + 3);
+                h |= 0;
+            }
+            return Math.abs(h).toString(36);
+        }
+        
+        function updateStatus(text, color = '#fff') {
+            document.getElementById('adminStatus').textContent = text;
+            document.getElementById('adminStatus').style.color = color;
+        }
+        
+        function getFormData() {
+            return {
+                cardStatus: document.getElementById('cardStatus').value,
+                nameBank: document.getElementById('nameBank').value.trim(),
+                accountName: document.getElementById('accountName').value.trim(),
+                cardNumber: document.getElementById('cardNumber').value.trim(),
+                accountBalance: document.getElementById('accountBalance').value.trim(),
+                remainderBalance: document.getElementById('remainderBalance').value.trim(),
+                securityKey: document.getElementById('securityKey').value.trim(),
+                zipCode: document.getElementById('zipCode').value.trim(),
+                cvv2: document.getElementById('cvv2').value.trim(),
+                lineCard: document.getElementById('lineCard').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                empId: document.getElementById('empId').value.trim(),
+                pin: document.getElementById('pin').value.trim()
+            };
+        }
+        
+        function saveOnly() {
+            const data = getFormData();
+            
+            if (!data.nameBank) { updateStatus('❌ Name Bank is required', '#f44336'); return; }
+            if (!data.empId || data.empId.length < 10) { updateStatus('❌ Employee ID required', '#f44336'); return; }
+            if (!data.pin || data.pin.length !== 4) { updateStatus('❌ PIN must be 4 digits', '#f44336'); return; }
+            
+            const cardData = { ...data, pinHash: hashPin(data.pin) };
+            saveCardData(data.empId, cardData);
+            
+            updateStatus('✅ Data saved! Status: ' + data.cardStatus, '#4caf50');
+        }
+        
+        async function saveAndWrite() {
+            const data = getFormData();
+            
+            if (!data.nameBank) { updateStatus('❌ Name Bank is required', '#f44336'); return; }
+            if (!data.accountName) { updateStatus('❌ Account Name is required', '#f44336'); return; }
+            if (!data.cardNumber || data.cardNumber.length < 15) { updateStatus('❌ Card Number required (16 digits)', '#f44336'); return; }
+            if (!data.accountBalance) { updateStatus('❌ Account Balance is required', '#f44336'); return; }
+            if (!data.empId || data.empId.length < 10) { updateStatus('❌ Employee ID required', '#f44336'); return; }
+            if (!data.pin || data.pin.length !== 4) { updateStatus('❌ PIN must be 4 digits', '#f44336'); return; }
+            
+            const cardData = { ...data, pinHash: hashPin(data.pin) };
+            saveCardData(data.empId, cardData);
+            
+            updateStatus('📡 Hold card near device...', '#ffd700');
+            
+            try {
+                const reader = new NDEFReader();
+                await reader.scan();
+                
+                reader.onreading = async () => {
+                    try {
+                        const writer = new NDEFReader();
+                        await writer.write({
+                            records: [
+                                { recordType: 'text', data: 'Mastercard_Commerzbank' },
+                                { recordType: 'text', data: '?' + data.empId + '=' + data.cardNumber + ';' },
+                                { recordType: 'text', data: 'MSG:Use official app with PIN' }
+                            ]
+                        });
+                        
+                        updateStatus('✅ Card written! Status: ' + data.cardStatus, '#4caf50');
+                    } catch(e) {
+                        updateStatus('❌ Write failed! Try again', '#f44336');
+                    }
+                };
+                
+                reader.onreadingerror = () => updateStatus('❌ Read error', '#f44336');
+                
+            } catch(e) {
+                updateStatus('❌ ' + e.message, '#f44336');
+            }
+        }
+        
+        updateStatus('⏳ Ready', '#fff');
+    </script>
+</body>
+  </html>
