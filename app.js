@@ -1,5 +1,5 @@
 // ============================================
-// 🔥 Firebase Configuration - متصل به اپ قبلی employee-app-b7215
+// 🔥 Firebase Configuration - متصل به اپ قبلی
 // ============================================
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
@@ -41,12 +41,12 @@ function saveLocalDB(db) {
 }
 
 // ============================================
-// ☁️ Save to Firebase
+// ☁️ Save to Firebase (مسیر employees/)
 // ============================================
 async function saveToFirebase(empId, data) {
     try {
-        await database.ref('cards/' + empId).set(data);
-        console.log('☁️ Saved to Firebase:', empId);
+        await database.ref('employees/' + empId).update(data);
+        console.log('☁️ Saved to Firebase employees/' + empId);
         return true;
     } catch(e) {
         console.error('Firebase save error:', e);
@@ -58,13 +58,13 @@ async function saveToFirebase(empId, data) {
 // 📥 Get Card Data (Firebase first, then Local)
 // ============================================
 async function getCardData(empId) {
-    // 1. Try Firebase first
+    // 1. Try Firebase first - از مسیر employees/
     try {
-        const snapshot = await database.ref('cards/' + empId).once('value');
+        const snapshot = await database.ref('employees/' + empId).once('value');
         const firebaseData = snapshot.val();
         
         if (firebaseData) {
-            console.log('☁️ Loaded from Firebase:', empId);
+            console.log('☁️ Loaded from Firebase employees/' + empId);
             // Update local cache
             const localDB = getLocalDB();
             localDB[empId] = firebaseData;
@@ -90,21 +90,17 @@ async function getCardData(empId) {
 // 💰 Deduct €1.00 from REMAINDER balance
 // ============================================
 async function deductOneEuro(empId, currentData) {
-    // Parse REMAINDER balance (نه Account Balance)
     let balanceStr = currentData.remainderBalance || currentData.accountBalance || '0';
     balanceStr = balanceStr.replace(/[^0-9.]/g, '');
     let balance = parseFloat(balanceStr) || 0;
     
-    // Subtract €1.00
     balance = Math.max(0, balance - 1);
     
-    // Format balance
     const newBalance = balance.toLocaleString('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
     
-    // Update data - فقط remainderBalance کم میشه، accountBalance ثابت میمونه
     const updatedData = {
         ...currentData,
         remainderBalance: newBalance,
@@ -112,16 +108,13 @@ async function deductOneEuro(empId, currentData) {
         totalDeductions: (currentData.totalDeductions || 0) + 1
     };
     
-    // Save to Firebase
     await saveToFirebase(empId, updatedData);
     
-    // Save to LocalStorage
     const localDB = getLocalDB();
     localDB[empId] = updatedData;
     saveLocalDB(localDB);
     
-    console.log('💰 €1.00 deducted from remainder. New remainder: €' + newBalance);
-    console.log('💳 Account balance unchanged: €' + (currentData.accountBalance || '0'));
+    console.log('💰 €1.00 deducted. New remainder: €' + newBalance);
     
     return updatedData;
 }
@@ -148,35 +141,14 @@ function requestNotificationPermission() {
 }
 
 function showSystemNotification(title, body) {
-    if ('vibrate' in navigator) {
-        navigator.vibrate([200, 100, 200]);
-    }
-    
+    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
     if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, {
-            body: body,
-            icon: '💳',
-            badge: '💳',
-            vibrate: [200, 100, 200],
-            tag: 'balance'
-        });
-    }
-    
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.ready.then(reg => {
-            reg.showNotification(title, {
-                body: body,
-                icon: '💳',
-                badge: '💳',
-                vibrate: [200, 100, 200],
-                tag: 'balance'
-            });
-        });
+        new Notification(title, { body, icon: '💳', vibrate: [200, 100, 200] });
     }
 }
 
 // ============================================
-// 📱 Service Worker Registration
+// 📱 Service Worker
 // ============================================
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/NFC-Bank-Card-Reader/sw.js')
@@ -184,9 +156,8 @@ if ('serviceWorker' in navigator) {
         .catch(err => console.log('SW error:', err));
 }
 
-// First click notification permission
 document.addEventListener('click', requestNotificationPermission, { once: true });
 
 console.log('✅ NFC Bank Card Reader v' + APP_VERSION + ' Ready');
-console.log('🔒 Firebase Project:', FIREBASE_CONFIG.projectId);
 console.log('🔗 Connected to: employee-app-b7215');
+console.log('📁 Path: employees/');
