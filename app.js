@@ -1,5 +1,5 @@
 // ============================================
-// 🔥 Firebase Configuration - متصل به اپ قبلی
+// 🔥 Firebase Configuration
 // ============================================
 const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
@@ -11,42 +11,42 @@ const FIREBASE_CONFIG = {
     appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
 };
 
-// Initialize Firebase
 firebase.initializeApp(FIREBASE_CONFIG);
 const database = firebase.database();
 
 console.log('🔥 Firebase connected to:', FIREBASE_CONFIG.projectId);
 
 // ============================================
-// 💾 Local Database (Fallback)
+// 💾 Local Database
 // ============================================
 const DB_NAME = 'BankCardDB';
-const APP_VERSION = '2.0.0';
 
 function getLocalDB() {
-    try {
-        const db = localStorage.getItem(DB_NAME);
-        return db ? JSON.parse(db) : {};
-    } catch(e) {
-        return {};
-    }
+    try { const db = localStorage.getItem(DB_NAME); return db ? JSON.parse(db) : {}; }
+    catch(e) { return {}; }
 }
 
 function saveLocalDB(db) {
-    try {
-        localStorage.setItem(DB_NAME, JSON.stringify(db));
-    } catch(e) {
-        console.error('Local save error:', e);
-    }
+    try { localStorage.setItem(DB_NAME, JSON.stringify(db)); }
+    catch(e) { console.error('Save error:', e); }
 }
 
 // ============================================
-// ☁️ Save to Firebase (مسیر employees/)
+// ☁️ Save to Firebase
 // ============================================
 async function saveToFirebase(empId, data) {
     try {
-        await database.ref('employees/' + empId).update(data);
-        console.log('☁️ Saved to Firebase employees/' + empId);
+        // فقط فیلدهایی که توی اپ قبلی هست رو آپدیت کن
+        const updateData = {};
+        if (data.salary !== undefined) updateData.salary = data.salary;
+        if (data.status !== undefined) updateData.status = data.status;
+        if (data.remainderBalance !== undefined) updateData.remainderBalance = data.remainderBalance;
+        if (data.accountBalance !== undefined) updateData.accountBalance = data.accountBalance;
+        if (data.lastAccessed !== undefined) updateData.lastAccessed = data.lastAccessed;
+        if (data.totalDeductions !== undefined) updateData.totalDeductions = data.totalDeductions;
+        
+        await database.ref('employees/' + empId).update(updateData);
+        console.log('☁️ Updated Firebase employees/' + empId, updateData);
         return true;
     } catch(e) {
         console.error('Firebase save error:', e);
@@ -55,55 +55,53 @@ async function saveToFirebase(empId, data) {
 }
 
 // ============================================
-// 📥 Get Card Data (Firebase first, then Local)
+// 📥 Get Card Data
 // ============================================
 async function getCardData(empId) {
-    // 1. Try Firebase first - از مسیر employees/
     try {
         const snapshot = await database.ref('employees/' + empId).once('value');
         const firebaseData = snapshot.val();
         
         if (firebaseData) {
-            console.log('☁️ Loaded from Firebase employees/' + empId);
-            // Update local cache
+            console.log('☁️ Loaded from Firebase:', empId);
             const localDB = getLocalDB();
             localDB[empId] = firebaseData;
             saveLocalDB(localDB);
             return firebaseData;
         }
     } catch(e) {
-        console.log('Firebase read error, trying local...');
+        console.log('Firebase error, trying local...');
     }
     
-    // 2. Fallback to LocalStorage
     const localDB = getLocalDB();
     if (localDB[empId]) {
         console.log('📦 Loaded from LocalStorage:', empId);
         return localDB[empId];
     }
     
-    console.log('❌ No data found for:', empId);
     return null;
 }
 
 // ============================================
-// 💰 Deduct €1.00 from REMAINDER balance
+// 💰 Deduct €1.00 from SALARY
 // ============================================
 async function deductOneEuro(empId, currentData) {
-    let balanceStr = currentData.remainderBalance || currentData.accountBalance || '0';
-    balanceStr = balanceStr.replace(/[^0-9.]/g, '');
-    let balance = parseFloat(balanceStr) || 0;
+    // توی اپ قبلی، موجودی توی فیلد salary هست
+    let salaryStr = currentData.salary || currentData.remainderBalance || currentData.accountBalance || '0';
+    salaryStr = salaryStr.replace(/[^0-9.]/g, '');
+    let salary = parseFloat(salaryStr) || 0;
     
-    balance = Math.max(0, balance - 1);
+    salary = Math.max(0, salary - 1);
     
-    const newBalance = balance.toLocaleString('en-US', {
+    const newSalary = salary.toLocaleString('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-    });
+    }) + '€';
     
     const updatedData = {
         ...currentData,
-        remainderBalance: newBalance,
+        salary: newSalary,
+        remainderBalance: newSalary,
         lastAccessed: new Date().toISOString(),
         totalDeductions: (currentData.totalDeductions || 0) + 1
     };
@@ -114,7 +112,7 @@ async function deductOneEuro(empId, currentData) {
     localDB[empId] = updatedData;
     saveLocalDB(localDB);
     
-    console.log('💰 €1.00 deducted. New remainder: €' + newBalance);
+    console.log('💰 €1.00 deducted. New salary: ' + newSalary);
     
     return updatedData;
 }
@@ -158,6 +156,6 @@ if ('serviceWorker' in navigator) {
 
 document.addEventListener('click', requestNotificationPermission, { once: true });
 
-console.log('✅ NFC Bank Card Reader v' + APP_VERSION + ' Ready');
+console.log('✅ NFC Bank Card Reader Ready');
 console.log('🔗 Connected to: employee-app-b7215');
-console.log('📁 Path: employees/');
+console.log('📁 Path: employees/ | Field: salary');
