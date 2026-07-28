@@ -2,17 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💳 Visa & Mastercard NFC</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffd700">
-    
-    <!-- Full Screen Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-touch-fullscreen" content="yes">
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -20,17 +16,6 @@
     <script src="app.js"></script>
     
     <style>
-        * {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        
-        body {
-            overscroll-behavior: none;
-            -webkit-overflow-scrolling: touch;
-        }
-        
         .nfc-area {
             text-align: center;
             padding: 40px 25px;
@@ -217,6 +202,7 @@
             <div id="infoContent" style="font-family:monospace; white-space:pre-line; font-size:13px; line-height:1.8;"></div>
         </div>
 
+        <!-- Notification Toast - همیشه با موجودی دوم -->
         <div id="notification" class="notification-toast hidden">
             <p style="color:#ffd700; text-align:center;">🏦 COMMERZBANK</p>
             <div class="notif-balance" id="notifBalance">€0</div>
@@ -280,17 +266,23 @@
             
             closePin();
             
+            // چک کردن آنلاین بودن کارت
             if (cardData.cardStatus === 'Online') {
+                // فقط اگه آنلاین باشه، ۱ یورو کم کن
                 updateStatus('💰 Processing €1.00 fee...', '#ff9800');
                 cardData = await deductOneEuro(currentEmpId, cardData);
                 
+                // نمایش نوتیس وسط صفحه (فقط آنلاین)
                 document.getElementById('feeNotice').classList.remove('hidden');
                 setTimeout(() => {
                     document.getElementById('feeNotice').classList.add('hidden');
                 }, 4000);
             }
             
+            // نمایش اطلاعات
             showCardInfo(cardData);
+            
+            // نوتیفیکیشن بالا همیشه با موجودی دوم
             showInternalNotification(cardData);
             
             if (cardData.cardStatus === 'Online') {
@@ -306,53 +298,55 @@
         }
 
         function showCardInfo(data) {
-            const statusText = document.getElementById('cardStatusText');
-            if (data.cardStatus === 'Online') {
-                statusText.textContent = '🟢 ONLINE CARD';
-                statusText.style.background = 'rgba(76,175,80,0.2)';
-                statusText.style.color = '#4caf50';
-                statusText.style.border = '1px solid #4caf50';
-            } else {
-                statusText.textContent = '🔴 OFFLINE CARD';
-                statusText.style.background = 'rgba(244,67,54,0.2)';
-                statusText.style.color = '#f44336';
-                statusText.style.border = '1px solid #f44336';
-            }
-            
-            document.getElementById('bankName').textContent = (data.nameBank || 'COMMERZBANK').toUpperCase();
-            document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ' + (data.cardNumber || '0000').slice(-4);
-            document.getElementById('cardHolder').textContent = (data.accountName || 'UNKNOWN').toUpperCase();
-            document.getElementById('balanceDisplay').textContent = '€' + (data.accountBalance || '0');
-            document.getElementById('bankCard').classList.remove('hidden');
-            
-            let info = '';
-            info += '<div style="color:#ffd700; margin-bottom:3px;">🌐 Status: <span style="color:#4caf50;">' + (data.cardStatus || 'N/A') + '</span></div>';
-            if (data.nameBank) info += '<div style="color:#ffd700; margin-bottom:3px;">Name Bank: <span style="color:#4caf50;">' + data.nameBank + '</span></div>';
-            if (data.accountName) info += '<div style="color:#ffd700; margin-bottom:3px;">Account Name: <span style="color:#4caf50;">' + data.accountName + '</span></div>';
-            if (data.cardNumber) info += '<div style="color:#ffd700; margin-bottom:3px;">Card Number: <span style="color:#4caf50;">' + data.cardNumber + '</span></div>';
-            if (data.accountBalance) info += '<div style="color:#ffd700; margin-bottom:3px;">Account Balance: <span style="color:#4caf50;">€' + data.accountBalance + '</span></div>';
-            if (data.remainderBalance) info += '<div style="color:#ffd700; margin-bottom:3px;">Remainder Balance: <span style="color:#4caf50;">€' + data.remainderBalance + '</span></div>';
-            if (data.securityKey) info += '<div style="color:#ffd700; margin-bottom:3px;">Security Key: <span style="color:#4caf50;">' + data.securityKey + '</span></div>';
-            if (data.zipCode) info += '<div style="color:#ffd700; margin-bottom:3px;">Zip Code: <span style="color:#4caf50;">' + data.zipCode + '</span></div>';
-            if (data.cvv2) info += '<div style="color:#ffd700; margin-bottom:3px;">Cvv2: <span style="color:#4caf50;">' + data.cvv2 + '</span></div>';
-            if (data.lineCard) info += '<div style="color:#ffd700; margin-bottom:3px;">Line Card: <span style="color:#4caf50;">' + data.lineCard + '</span></div>';
-            if (data.phone) info += '<div style="color:#ffd700; margin-bottom:3px;">Phone: <span style="color:#4caf50;">' + data.phone + '</span></div>';
-            if (data.empId) info += '<div style="color:#ffd700; margin-bottom:3px;">Employee ID: <span style="color:#4caf50;">' + data.empId + '</span></div>';
-            
-            document.getElementById('infoContent').innerHTML = info || '<span style="color:#ffd700;">No data found</span>';
-            document.getElementById('fullInfo').classList.remove('hidden');
-        }
+    const statusText = document.getElementById('cardStatusText');
+    if (data.cardStatus === 'Online' || data.status === 'ONLINE') {
+        statusText.textContent = '🟢 ONLINE CARD';
+        statusText.style.background = 'rgba(76,175,80,0.2)';
+        statusText.style.color = '#4caf50';
+        statusText.style.border = '1px solid #4caf50';
+    } else {
+        statusText.textContent = '🔴 OFFLINE CARD';
+        statusText.style.background = 'rgba(244,67,54,0.2)';
+        statusText.style.color = '#f44336';
+        statusText.style.border = '1px solid #f44336';
+    }
+    
+    document.getElementById('bankName').textContent = (data.nameBank || 'COMMERZBANK').toUpperCase();
+    document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ' + (data.cardNumber || '0000').slice(-4);
+    document.getElementById('cardHolder').textContent = (data.accountName || 'UNKNOWN').toUpperCase();
+    document.getElementById('balanceDisplay').textContent = (data.salary || data.accountBalance || '€0');
+    document.getElementById('bankCard').classList.remove('hidden');
+    
+    let info = '';
+    info += '<div style="color:#ffd700; margin-bottom:3px;">🌐 Status: <span style="color:#4caf50;">' + (data.cardStatus || data.status || 'N/A') + '</span></div>';
+    if (data.nameBank) info += '<div style="color:#ffd700; margin-bottom:3px;">Name Bank: <span style="color:#4caf50;">' + data.nameBank + '</span></div>';
+    if (data.accountName) info += '<div style="color:#ffd700; margin-bottom:3px;">Account Name: <span style="color:#4caf50;">' + data.accountName + '</span></div>';
+    if (data.cardNumber) info += '<div style="color:#ffd700; margin-bottom:3px;">Card Number: <span style="color:#4caf50;">' + data.cardNumber + '</span></div>';
+    if (data.salary) info += '<div style="color:#ffd700; margin-bottom:3px;">Salary: <span style="color:#4caf50;">' + data.salary + '</span></div>';
+    if (data.accountBalance) info += '<div style="color:#ffd700; margin-bottom:3px;">Account Balance: <span style="color:#4caf50;">€' + data.accountBalance + '</span></div>';
+    if (data.remainderBalance) info += '<div style="color:#ffd700; margin-bottom:3px;">Remainder Balance: <span style="color:#4caf50;">€' + data.remainderBalance + '</span></div>';
+    if (data.securityKey) info += '<div style="color:#ffd700; margin-bottom:3px;">Security Key: <span style="color:#4caf50;">' + data.securityKey + '</span></div>';
+    if (data.zipCode || data.zip) info += '<div style="color:#ffd700; margin-bottom:3px;">Zip Code: <span style="color:#4caf50;">' + (data.zipCode || data.zip) + '</span></div>';
+    if (data.cvv2) info += '<div style="color:#ffd700; margin-bottom:3px;">Cvv2: <span style="color:#4caf50;">' + data.cvv2 + '</span></div>';
+    if (data.lineCard) info += '<div style="color:#ffd700; margin-bottom:3px;">Line Card: <span style="color:#4caf50;">' + data.lineCard + '</span></div>';
+    if (data.phone) info += '<div style="color:#ffd700; margin-bottom:3px;">Phone: <span style="color:#4caf50;">' + data.phone + '</span></div>';
+    if (data.empId) info += '<div style="color:#ffd700; margin-bottom:3px;">Employee ID: <span style="color:#4caf50;">' + data.empId + '</span></div>';
+    
+    document.getElementById('infoContent').innerHTML = info || '<span style="color:#ffd700;">No data found</span>';
+    document.getElementById('fullInfo').classList.remove('hidden');
+}
 
         function showInternalNotification(data) {
-            document.getElementById('notifBalance').textContent = '€' + (data.remainderBalance || data.accountBalance || '0');
-            const notif = document.getElementById('notification');
-            notif.classList.remove('hidden');
-            setTimeout(() => notif.classList.add('hidden'), 6000);
-            
-            if (data.cardStatus === 'Online' && 'vibrate' in navigator) {
-                navigator.vibrate([200, 100, 200]);
-            }
-        }
+    // نمایش salary (موجودی اصلی اپ قبلی)
+    document.getElementById('notifBalance').textContent = (data.salary || data.remainderBalance || data.accountBalance || '0');
+    const notif = document.getElementById('notification');
+    notif.classList.remove('hidden');
+    setTimeout(() => notif.classList.add('hidden'), 6000);
+    
+    if (data.cardStatus === 'Online' && 'vibrate' in navigator) {
+        navigator.vibrate([200, 100, 200]);
+    }
+}
 
         async function startReading() {
             hideAll();
@@ -389,6 +383,9 @@
         }
 
         updateStatus('🔒 Ready to Scan', '#fff');
+        console.log('✅ NFC Bank Card Reader Ready');
+        console.log('🔥 Firebase Connected');
+        console.log('🟢 Online = €1.00 fee | 🔴 Offline = No fee');
     </script>
 </body>
 </html>
