@@ -1,12 +1,12 @@
 // ============================================
-// 🔥 Firebase Configuration
+// 🔥 Firebase Configuration - متصل به اپ قبلی employee-app-b7215
 // ============================================
 const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDj97UCS7ZuLtpQJFACD0zesDR8gVK6RYA",
-    authDomain: "nfc-bank-card-reader.firebaseapp.com",
-    databaseURL: "https://nfc-bank-card-reader-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "nfc-bank-card-reader",
-    storageBucket: "nfc-bank-card-reader.firebasestorage.app",
+    apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
+    authDomain: "employee-app-b7215.firebaseapp.com",
+    databaseURL: "https://employee-app-b7215-default-rtdb.firebaseio.com",
+    projectId: "employee-app-b7215",
+    storageBucket: "employee-app-b7215.appspot.com",
     messagingSenderId: "961058467244",
     appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
 };
@@ -189,3 +189,4 @@ document.addEventListener('click', requestNotificationPermission, { once: true }
 
 console.log('✅ NFC Bank Card Reader v' + APP_VERSION + ' Ready');
 console.log('🔒 Firebase Project:', FIREBASE_CONFIG.projectId);
+console.log('🔗 Connected to: employee-app-b7215');
