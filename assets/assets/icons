@@ -1,0 +1,5 @@
+mkdir -p icons
+# فایل رو کپی کن
+cp icon-512x512.png icons/
+git add icons/icon-512x512.png
+git commit -m "add app icon"
