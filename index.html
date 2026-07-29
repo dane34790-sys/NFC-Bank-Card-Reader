@@ -86,7 +86,6 @@
         .status-bar { margin-top:15px; padding:12px 16px; background:rgba(0,0,0,0.4); border-radius:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
         #statusText { font-size:14px; font-weight:500; color:#aaa; }
 
-        /* ===== PIN ===== */
         .pin-overlay {
             display:none;
             position:fixed; top:0; left:0; width:100%; height:100%;
@@ -128,7 +127,6 @@
         }
         .pin-cancel:active { transform:scale(0.95); background:rgba(244,67,54,0.15); }
 
-        /* ===== Bank Card ===== */
         .bank-card {
             margin-top:20px;
             background:linear-gradient(145deg,#1a1a3e,#0d0d24);
@@ -185,7 +183,6 @@
         .notification-toast p { color:rgba(255,255,255,0.5); font-size:11px; }
         .notification-toast p:first-child { color:#ffd700; font-size:13px; font-weight:600; }
         
-        /* ===== دکمه رفرش ===== */
         .refresh-btn {
             position:fixed; bottom:20px; right:20px; z-index:9999;
             background:rgba(255,215,0,0.15);
@@ -298,116 +295,62 @@
 <!-- ===== JAVASCRIPT ===== -->
 <!-- ============================================ -->
 <script>
-// ============================================
-// ===== FIREBASE CONFIG =====
-// ============================================
-const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
-    authDomain: "employee-app-b7215.firebaseapp.com",
-    databaseURL: "https://employee-app-b7215-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "employee-app-b7215",
-    storageBucket: "employee-app-b7215.appspot.com",
+// ===== Firebase Config (پروژه جدید) =====
+const firebaseConfig = {
+    apiKey: "AIzaSyDj97UCS7ZuLtpQJFACD0zesDR8gVK6RYA",
+    authDomain: "nfc-bank-card-reader.firebaseapp.com",
+    databaseURL: "https://nfc-bank-card-reader-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "nfc-bank-card-reader",
+    storageBucket: "nfc-bank-card-reader.firebasestorage.app",
     messagingSenderId: "961058467244",
     appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
 };
 
-firebase.initializeApp(FIREBASE_CONFIG);
+firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
-console.log('🔥 Firebase Connected');
+console.log('🔥 Firebase Connected:', firebaseConfig.projectId);
 
 // ============================================
-// ===== DATA =====
-// ============================================
-const TEST_DATA = {
-    '1783340149960': {
-        empId: '1783340149960',
-        cardNumber: '5232242096782922',
-        accountName: 'MAZDAK MONSHIZADEH',
-        nameBank: 'COMMERZBANK',
-        salary: '€8,538,616',
-        accountBalance: 8538616,
-        remainderBalance: 8538606,
-        securityKey: 'Delta789032Delta',
-        zipCode: 'De65590',
-        cvv2: '522',
-        lineCard: 'Hannover5690',
-        phone: '+989920872851',
-        cardStatus: 'Online',
-        status: 'ONLINE',
-        pinHash: '1a2b3c4d'
-    }
-};
-
-// ============================================
-// ===== FUNCTIONS =====
+// ===== توابع =====
 // ============================================
 
 async function getCardData(id) {
     try {
         const snapshot = await database.ref('employees/' + id).once('value');
-        const data = snapshot.val();
-        if (data) return data;
-    } catch (e) { console.warn('Firebase error:', e); }
-    return TEST_DATA[id] || null;
+        return snapshot.val();
+    } catch (e) {
+        console.warn('Firebase error:', e);
+        return null;
+    }
 }
 
-// ============================================
-// ===== کسر ۱ یورو از Remainder Balance =====
-// ============================================
-
+// ===== کسر ۱ یورو از Remainder =====
 async function deductOneEuro(id, data) {
+    console.log('💰 Starting deduction for:', id);
+    
     try {
-        console.log('💰 Starting deduction for:', id);
-        console.log('💰 Current data:', data);
+        let current = parseInt(String(data.remainderBalance || '0').replace(/[,€]/g, '')) || 0;
+        console.log('💰 Current remainder:', current);
         
-        // دریافت Remainder Balance فعلی
-        let remainder = 0;
-        if (data.remainderBalance) {
-            remainder = parseFloat(String(data.remainderBalance).replace(/[^0-9.]/g, '')) || 0;
-        } else if (data.salary) {
-            remainder = parseFloat(String(data.salary).replace(/[^0-9.]/g, '')) || 0;
-        }
+        let newRemainder = Math.max(0, current - 1);
+        console.log('💰 New remainder:', newRemainder);
         
-        console.log('💰 Current Remainder:', remainder);
-        
-        // کسر ۱ یورو
-        let newRemainder = Math.max(0, remainder - 1);
-        let newRemainderStr = newRemainder.toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
+        await database.ref('employees/' + id).update({
+            remainderBalance: String(newRemainder),
+            salary: String(newRemainder) + '€',
+            lastFeeDate: Date.now()
         });
         
-        console.log('💰 New Remainder:', newRemainderStr);
+        console.log('✅ Firebase updated!');
         
-        // ===== آپدیت Firebase =====
-        try {
-            const updates = {
-                remainderBalance: newRemainderStr,
-                lastFeeDate: Date.now()
-            };
-            
-            // اگه salary هم همراهاست آپدیت کن
-            if (data.salary) {
-                updates.salary = newRemainderStr + '€';
-            }
-            
-            await database.ref('employees/' + id).update(updates);
-            console.log('✅ Firebase updated successfully!');
-            console.log('✅ New remainderBalance:', newRemainderStr);
-            
-        } catch (err) {
-            console.error('❌ Firebase update error:', err);
-        }
-        
-        // ===== برگرداندن داده جدید =====
         return {
             ...data,
-            remainderBalance: newRemainderStr,
-            salary: newRemainderStr + '€'
+            remainderBalance: String(newRemainder),
+            salary: String(newRemainder) + '€'
         };
         
     } catch (err) {
-        console.error('❌ Error deducting fee:', err);
+        console.error('❌ Error:', err);
         return data;
     }
 }
@@ -422,7 +365,7 @@ function hashPin(pin) {
 }
 
 // ============================================
-// ===== VARIABLES =====
+// ===== متغیرها =====
 // ============================================
 let currentEmpId = null;
 let enteredPin = '';
@@ -501,7 +444,7 @@ async function verifyPin() {
     if (isProcessing) return;
     isProcessing = true;
     
-    console.log('🔐 Verifying PIN...');
+    console.log('🔐 Verifying PIN:', enteredPin);
     
     if (!currentEmpId) {
         updateStatus('❌ No employee ID', '#f44336');
@@ -517,21 +460,17 @@ async function verifyPin() {
             return;
         }
         
-        console.log('📋 Data before deduction:', cardData);
+        console.log('📋 Data from Firebase:', cardData);
         
-        // ✅ حالت تست: هر PIN ۴ رقمی قبول میشه
         closePin();
         
         const isOnline = cardData.cardStatus === 'Online' || cardData.status === 'ONLINE';
+        console.log('🌐 Is Online?', isOnline);
         
         if (isOnline) {
             updateStatus('💰 Processing €1.00 fee...', '#ff9800');
-            
-            // ===== اینجا کسر انجام میشه =====
             cardData = await deductOneEuro(currentEmpId, cardData);
-            console.log('📋 Data after deduction:', cardData);
             
-            // نمایش نوتیفیکیشن
             document.getElementById('feeNotice')?.classList.remove('hidden');
             setTimeout(() => {
                 document.getElementById('feeNotice')?.classList.add('hidden');
@@ -544,14 +483,14 @@ async function verifyPin() {
         
     } catch (err) {
         console.error('❌ Error:', err);
-        updateStatus('❌ Error', '#f44336');
+        updateStatus('❌ Error: ' + err.message, '#f44336');
     }
     
     isProcessing = false;
 }
 
 // ============================================
-// ===== SHOW CARD =====
+// ===== SHOW CARD (با داده جدید) =====
 // ============================================
 
 function showCardInfo(data) {
@@ -574,7 +513,7 @@ function showCardInfo(data) {
         cardNumber.textContent = '•••• •••• •••• ' + String(num).slice(-4);
     }
     if (cardHolder) cardHolder.textContent = (data.accountName || 'MAZDAK MONSHIZADEH').toUpperCase();
-    if (balance) balance.textContent = data.salary || '€8,538,616';
+    if (balance) balance.textContent = data.salary || data.accountBalance || '€8,538,616';
     if (bankCard) bankCard.classList.remove('hidden');
     
     if (infoContent) {
@@ -583,14 +522,14 @@ function showCardInfo(data) {
             <div>🏛️ Name Bank: <span style="color:#4caf50;">${data.nameBank || 'COMMERZBANK'}</span></div>
             <div>👤 Account Name: <span style="color:#4caf50;">${data.accountName || 'MAZDAK MONSHIZADEH'}</span></div>
             <div>💳 Card Number: <span style="color:#4caf50;">${data.cardNumber || '5232242096782922'}</span></div>
-            <div>💰 Account Balance: <span style="color:#4caf50;">${data.salary || data.accountBalance || '€8,538,616'}</span></div>
-            <div>💰 Remainder Balance: <span style="color:#4caf50;">${data.remainderBalance || '€8,538,606'}</span></div>
+            <div>💰 Account Balance: <span style="color:#4caf50;">${data.accountBalance || data.salary || '€8,538,616'}</span></div>
+            <div>💰 Remainder Balance: <span style="color:#4caf50;">${data.remainderBalance || '8,538,605'}</span></div>
             <div>🔑 Security Key: <span style="color:#4caf50;">${data.securityKey || 'Delta789032Delta'}</span></div>
             <div>📍 Zip Code: <span style="color:#4caf50;">${data.zipCode || 'De65590'}</span></div>
             <div>🔒 Cvv2: <span style="color:#4caf50;">${data.cvv2 || '522'}</span></div>
             <div>📋 Line Card: <span style="color:#4caf50;">${data.lineCard || 'Hannover5690'}</span></div>
             <div>📞 Phone: <span style="color:#4caf50;">${data.phone || '+989920872851'}</span></div>
-            <div>🆔 Employee ID: <span style="color:#4caf50;">${data.empId || currentEmpId || '111111111111'}</span></div>
+            <div>🆔 Employee ID: <span style="color:#4caf50;">${data.empId || currentEmpId || '1783340149960'}</span></div>
         `;
         document.getElementById('fullInfo')?.classList.remove('hidden');
     }
@@ -599,7 +538,7 @@ function showCardInfo(data) {
 function showNotification(data) {
     const notif = document.getElementById('notification');
     const balance = document.getElementById('notifBalance');
-    if (balance) balance.textContent = data.salary || data.remainderBalance || '€8,538,616';
+    if (balance) balance.textContent = data.remainderBalance || data.salary || '€8,538,616';
     if (notif) {
         notif.classList.remove('hidden');
         setTimeout(() => notif.classList.add('hidden'), 5000);
@@ -608,7 +547,7 @@ function showNotification(data) {
 }
 
 // ============================================
-// ===== START NFC (اصلاح شده برای تشخیص درست) =====
+// ===== START NFC =====
 // ============================================
 
 async function startReading() {
@@ -641,7 +580,6 @@ async function startReading() {
             
             for (let i = 0; i < e.message.records.length; i++) {
                 const record = e.message.records[i];
-                console.log(`🔍 Record ${i+1}: type=${record.recordType}`);
                 
                 if (record.recordType !== 'text' && record.recordType !== 'mime') continue;
                 
@@ -649,33 +587,26 @@ async function startReading() {
                     const text = new TextDecoder().decode(record.data);
                     console.log(`📄 Text: "${text}"`);
                     
-                    // چک کردن Mastercard
                     if (text === 'Mastercard_Commerzbank') {
                         isBankCard = true;
                         console.log('✅ Bank card identified');
                     }
                     
-                    // استخراج ID - پشتیبانی از هر دو فرمت
-                    // فرمت 1: ?1783340149960=5232242096782922;
-                    // فرمت 2: 5232242096782922=1783340149960
                     if (text.includes('=')) {
                         const clean = text.replace(/[?;]/g, '');
                         const parts = clean.split('=');
                         if (parts.length >= 2) {
-                            // تشخیص کدوم قسمت ID هست
                             const part1 = parts[0].trim();
                             const part2 = parts[1].trim();
                             
-                            // اگر قسمت اول عدد 13 رقمی باشه (ID) یا قسمت دوم عدد 13 رقمی باشه
                             if (part1.length >= 10 && part1.length <= 15) {
                                 empId = part1;
                             } else if (part2.length >= 10 && part2.length <= 15) {
                                 empId = part2;
                             } else {
-                                // پیش‌فرض: قسمت اول (برای فرمت ?id=number)
                                 empId = part1;
                             }
-                            console.log(`✅ Employee ID extracted: ${empId}`);
+                            console.log(`✅ Employee ID: ${empId}`);
                         }
                     }
                 } catch (decodeErr) {
@@ -683,38 +614,33 @@ async function startReading() {
                 }
             }
             
-            // اگر کارت بانکی نبود یا ID نداشت
             if (!isBankCard) {
                 updateStatus('❌ Not a bank card', '#f44336');
-                console.log('❌ Not a bank card (Mastercard_Commerzbank not found)');
                 return;
             }
             
             if (!empId) {
-                updateStatus('❌ No Employee ID found on card', '#f44336');
-                console.log('❌ No Employee ID found');
+                updateStatus('❌ No Employee ID found', '#f44336');
                 return;
             }
             
             currentEmpId = empId;
             console.log(`🔍 Searching Firebase for: ${currentEmpId}`);
             
-            // چک کردن در Firebase
             const data = await getCardData(empId);
             if (!data) {
                 updateStatus('❌ Employee not found in system', '#f44336');
-                console.log('❌ Not found in Firebase');
                 return;
             }
             
-            console.log('✅ Data found, showing PIN dialog');
+            console.log('✅ Data found, showing PIN');
             updateStatus('🔐 Enter PIN', '#ffd700');
             showPinDialog();
         };
         
     } catch (err) {
         console.error('NFC Error:', err);
-        updateStatus('❌ NFC Error: ' + err.message, '#f44336');
+        updateStatus('❌ NFC Error', '#f44336');
     }
 }
 
@@ -729,6 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 console.log('✅ NFC Bank Card Reader Ready');
+console.log('🔥 Project:', firebaseConfig.projectId);
 </script>
 
 </body>
