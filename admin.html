@@ -9,26 +9,81 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="app.js"></script>
     
     <style>
-        .form-group { margin-bottom: 12px; }
-        .form-label { display: block; color: #ffd700; font-size: 12px; margin-bottom: 5px; font-weight: bold; }
-        .form-input { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 15px; box-sizing: border-box; }
-        .form-input:focus { outline: none; border-color: #ffd700; }
-        .form-select { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 15px; box-sizing: border-box; cursor: pointer; }
-        .form-select:focus { outline: none; border-color: #ffd700; }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }
-        .btn:active { transform: scale(0.95); }
-        .btn-green { background: #4caf50; color: #fff; }
-        .btn-blue { background: #2196f3; color: #fff; }
-        .btn-red { background: #f44336; color: #fff; }
-        .btn-orange { background: #ff9800; color: #fff; }
-        .btn-purple { background: #9c27b0; color: #fff; }
-        .status-bar { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; text-align: center; font-size: 13px; margin-top: 15px; }
-        .cloud-badge { background: #2196f3; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 10px; display: inline-block; margin-left: 8px; }
-        .section-title { color: #ffd700; font-size: 13px; font-weight: 700; margin: 15px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,215,0,0.3); }
-        .highlight { background: rgba(255,152,0,0.2); border: 1px solid #ff9800; border-radius: 8px; padding: 8px; margin: 8px 0; color: #ff9800; font-size: 12px; text-align: center; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #0a0a1a;
+            color: #fff;
+            font-family: -apple-system, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .container {
+            max-width: 480px;
+            width: 100%;
+            background: linear-gradient(145deg, #12122a, #1a1a3e);
+            border-radius: 28px;
+            padding: 25px 20px 30px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,215,0,0.05);
+        }
+        .app-header { text-align:center; margin-bottom:20px; }
+        .app-title {
+            font-size:24px; font-weight:800;
+            background:linear-gradient(135deg,#ffd700,#ffaa00);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            letter-spacing:0.5px;
+        }
+        .app-subtitle { color:rgba(255,255,255,0.4); font-size:12px; letter-spacing:2px; margin-top:2px; }
+        .cloud-badge { background:#2196f3; color:#fff; padding:3px 12px; border-radius:12px; font-size:10px; display:inline-block; margin-left:8px; -webkit-text-fill-color:#fff; }
+        
+        .form-group { margin-bottom:12px; }
+        .form-label { display:block; color:#ffd700; font-size:11px; margin-bottom:4px; font-weight:bold; letter-spacing:0.5px; }
+        .form-input { width:100%; padding:10px 14px; background:rgba(0,0,0,0.6); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-size:14px; box-sizing:border-box; transition:all 0.3s; }
+        .form-input:focus { outline:none; border-color:#ffd700; background:rgba(0,0,0,0.8); }
+        .form-select { width:100%; padding:10px 14px; background:rgba(0,0,0,0.6); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:10px; font-size:14px; box-sizing:border-box; cursor:pointer; }
+        .form-select:focus { outline:none; border-color:#ffd700; }
+        
+        .btn { width:100%; padding:12px; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; margin-top:6px; transition:all 0.2s; }
+        .btn:active { transform:scale(0.96); }
+        .btn-green { background:#4caf50; color:#fff; }
+        .btn-blue { background:#2196f3; color:#fff; }
+        .btn-red { background:#f44336; color:#fff; }
+        .btn-orange { background:#ff9800; color:#fff; }
+        .btn-purple { background:#9c27b0; color:#fff; }
+        .btn-gold { background:#ffd700; color:#000; }
+        .btn-cyan { background:#00bcd4; color:#fff; }
+        
+        .status-bar { background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px; text-align:center; font-size:12px; margin-top:12px; color:#aaa; }
+        .section-title { color:#ffd700; font-size:12px; font-weight:700; margin:18px 0 10px; padding-bottom:5px; border-bottom:1px solid rgba(255,215,0,0.2); letter-spacing:1px; }
+        .highlight { background:rgba(255,152,0,0.15); border:1px solid #ff9800; border-radius:8px; padding:8px; margin:8px 0; color:#ff9800; font-size:12px; text-align:center; }
+        .highlight.hidden { display:none; }
+        .btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+        .btn-row .btn { flex:1; min-width:100px; margin-top:0; }
+        
+        .two-col { display:flex; gap:10px; }
+        .two-col .form-group { flex:1; }
+        
+        .refresh-btn {
+            position:fixed; bottom:20px; right:20px; z-index:9999;
+            background:rgba(255,215,0,0.15);
+            border:1px solid rgba(255,215,0,0.3);
+            border-radius:50%;
+            width:45px; height:45px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:20px; cursor:pointer;
+            backdrop-filter:blur(10px);
+            box-shadow:0 4px 20px rgba(0,0,0,0.5);
+            transition:all 0.3s;
+            color:#ffd700;
+        }
+        .refresh-btn:hover { transform:scale(1.1); background:rgba(255,215,0,0.25); }
+        .refresh-btn:active { transform:scale(0.95); }
     </style>
 </head>
 <body>
@@ -48,40 +103,32 @@
                 <input type="text" class="form-input" id="controlEmpId" maxlength="13" placeholder="Enter Employee ID" style="text-align:center; font-size:18px; letter-spacing:3px;">
             </div>
             
-            <button class="btn btn-blue" onclick="loadEmployeeData()">
-                📥 Load Employee Data
-            </button>
-            
-            <button class="btn btn-orange" onclick="toggleOnlineOffline()">
-                🔄 Toggle Online/Offline
-            </button>
-            
-            <button class="btn btn-red" onclick="resetRemainderBalance()">
-                💰 Reset Remainder to Zero
-            </button>
-            
-            <button class="btn btn-purple" onclick="addBalance()">
-                ➕ Add €1,000 to Remainder
-            </button>
+            <div class="btn-row">
+                <button class="btn btn-blue" onclick="loadEmployeeData()">📥 Load</button>
+                <button class="btn btn-orange" onclick="toggleOnlineOffline()">🔄 Toggle</button>
+                <button class="btn btn-red" onclick="resetRemainder()">💰 Reset</button>
+                <button class="btn btn-purple" onclick="addBalance()">➕ Add €1k</button>
+            </div>
             
             <div id="employeeStatus" class="highlight hidden">
                 <span id="empStatusText">No employee loaded</span>
             </div>
             
-            <!-- ===== اطلاعات کارت جدید ===== -->
-            <div class="section-title">💳 New Card Setup</div>
+            <!-- ===== اطلاعات کارت ===== -->
+            <div class="section-title">💳 Card Setup</div>
             
-            <div class="form-group">
-                <label class="form-label">🌐 Card Status</label>
-                <select class="form-select" id="cardStatus">
-                    <option value="Online">🟢 Online Card</option>
-                    <option value="Offline">🔴 Offline Card</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">🏛️ Name Bank</label>
-                <input type="text" class="form-input" id="nameBank" value="Commerzbank">
+            <div class="two-col">
+                <div class="form-group">
+                    <label class="form-label">🌐 Card Status</label>
+                    <select class="form-select" id="cardStatus">
+                        <option value="Online">🟢 Online</option>
+                        <option value="Offline">🔴 Offline</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🏛️ Bank Name</label>
+                    <input type="text" class="form-input" id="nameBank" value="Commerzbank">
+                </div>
             </div>
             
             <div class="form-group">
@@ -89,39 +136,48 @@
                 <input type="text" class="form-input" id="accountName" value="Mazdak Monshizadeh">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">💳 Card Number</label>
-                <input type="text" class="form-input" id="cardNumber" maxlength="16" value="5232242096782922">
+            <div class="two-col">
+                <div class="form-group">
+                    <label class="form-label">💳 Card Number</label>
+                    <input type="text" class="form-input" id="cardNumber" maxlength="16" value="5232242096782922">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🆔 Employee ID</label>
+                    <input type="text" class="form-input" id="empId" maxlength="13" value="1783340149960">
+                </div>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">💰 Account Balance (ثابت - کم نمیشه)</label>
-                <input type="text" class="form-input" id="accountBalance" value="8,538,616" style="border-color:#4caf50;">
+            <div class="two-col">
+                <div class="form-group">
+                    <label class="form-label">💰 Account Balance (ثابت)</label>
+                    <input type="text" class="form-input" id="accountBalance" value="8,538,616" style="border-color:#4caf50;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">💰 Remainder (کسر از این)</label>
+                    <input type="text" class="form-input" id="remainderBalance" value="8,538,606" style="border-color:#ff9800;">
+                </div>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">💰 Remainder Balance (از این کم میشه)</label>
-                <input type="text" class="form-input" id="remainderBalance" value="8,538,606" style="border-color:#ff9800;">
+            <div class="two-col">
+                <div class="form-group">
+                    <label class="form-label">🔑 Security Key</label>
+                    <input type="text" class="form-input" id="securityKey" value="Delta789032Delta">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📍 Zip Code</label>
+                    <input type="text" class="form-input" id="zipCode" value="De65590">
+                </div>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">🔑 Security Key</label>
-                <input type="text" class="form-input" id="securityKey" value="Delta789032Delta">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">📍 Zip Code</label>
-                <input type="text" class="form-input" id="zipCode" value="De65590">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">🔒 Cvv2</label>
-                <input type="text" class="form-input" id="cvv2" maxlength="4" value="522">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">📋 Line Card</label>
-                <input type="text" class="form-input" id="lineCard" value="Hannover5690">
+            <div class="two-col">
+                <div class="form-group">
+                    <label class="form-label">🔒 Cvv2</label>
+                    <input type="text" class="form-input" id="cvv2" maxlength="4" value="522">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📋 Line Card</label>
+                    <input type="text" class="form-input" id="lineCard" value="Hannover5690">
+                </div>
             </div>
             
             <div class="form-group">
@@ -129,144 +185,124 @@
                 <input type="text" class="form-input" id="phone" value="+989920872851">
             </div>
             
-            <div class="form-group">
-                <label class="form-label">🆔 Employee ID</label>
-                <input type="text" class="form-input" id="empId" maxlength="13" value="1111111111111">
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">🔐 PIN (4 digits)</label>
-                <input type="text" class="form-input" id="pin" maxlength="4" value="1234" style="letter-spacing:10px; font-size:20px;">
+            <div class="two-col">
+                <div class="form-group">
+                    <label class="form-label">🔐 PIN (4 digits)</label>
+                    <input type="text" class="form-input" id="pin" maxlength="4" value="1234" style="letter-spacing:10px; font-size:20px;">
+                </div>
+                <div class="form-group" style="display:flex; align-items:flex-end; gap:8px;">
+                    <button class="btn btn-cyan" onclick="deductOneEuroFromAdmin()" style="padding:10px; margin-top:0;">💰 -1€</button>
+                </div>
             </div>
 
-            <button class="btn btn-green" onclick="saveAndWrite()">
-                💾 Save & Write to NFC Card
-            </button>
+            <!-- ===== دکمه‌ها ===== -->
+            <div class="btn-row">
+                <button class="btn btn-green" onclick="saveAndWrite()">💾 Save & Write</button>
+                <button class="btn btn-orange" onclick="writeWithAlternative()">🔄 جایگزین</button>
+            </div>
             
-            <button class="btn btn-blue" onclick="saveToCloud()">
-                ☁️ Save to Firebase Only
-            </button>
+            <button class="btn btn-blue" onclick="saveToCloud()">☁️ Save to Firebase</button>
 
             <div class="status-bar" id="adminStatus">⏳ Ready - Firebase Connected ☁️</div>
         </div>
     </div>
 
+    <!-- ===== دکمه رفرش ===== -->
+    <div class="refresh-btn" onclick="location.reload()" title="Refresh">🔄</div>
+
     <script>
-        // ===== Load Employee Data =====
-        async function loadEmployeeData() {
-            const empId = document.getElementById('controlEmpId').value.trim();
-            
-            if (!empId) { updateStatus('❌ Enter Employee ID first', '#f44336'); return; }
-            
-            updateStatus('📥 Loading from Firebase...', '#2196f3');
-            
-            const data = await getCardData(empId);
-            
-            if (data) {
-                // Fill form with loaded data
-                document.getElementById('cardStatus').value = data.cardStatus || 'Online';
-                document.getElementById('nameBank').value = data.nameBank || '';
-                document.getElementById('accountName').value = data.accountName || '';
-                document.getElementById('cardNumber').value = data.cardNumber || '';
-                document.getElementById('accountBalance').value = data.accountBalance || '0';
-                document.getElementById('remainderBalance').value = data.remainderBalance || '0';
-                document.getElementById('securityKey').value = data.securityKey || '';
-                document.getElementById('zipCode').value = data.zipCode || '';
-                document.getElementById('cvv2').value = data.cvv2 || '';
-                document.getElementById('lineCard').value = data.lineCard || '';
-                document.getElementById('phone').value = data.phone || '';
-                document.getElementById('empId').value = data.empId || '';
-                
-                // Show status
-                document.getElementById('employeeStatus').classList.remove('hidden');
-                document.getElementById('empStatusText').textContent = 
-                    '✅ ' + data.accountName + ' | Balance: €' + data.accountBalance + 
-                    ' | Remainder: €' + data.remainderBalance + 
-                    ' | Status: ' + data.cardStatus;
-                
-                updateStatus('✅ Employee loaded: ' + data.accountName, '#4caf50');
-            } else {
-                updateStatus('❌ Employee not found in Firebase', '#f44336');
+        // ============================================================
+        // ===== FIREBASE =====
+        // ============================================================
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
+            authDomain: "employee-app-b7215.firebaseapp.com",
+            databaseURL: "https://employee-app-b7215-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "employee-app-b7215",
+            storageBucket: "employee-app-b7215.appspot.com",
+            messagingSenderId: "961058467244",
+            appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
+        };
+
+        firebase.initializeApp(FIREBASE_CONFIG);
+        const database = firebase.database();
+        console.log('🔥 Firebase Connected');
+
+        // ============================================================
+        // ===== FUNCTIONS =====
+        // ============================================================
+
+        async function getCardData(id) {
+            try {
+                const snapshot = await database.ref('employees/' + id).once('value');
+                return snapshot.val();
+            } catch (e) {
+                console.warn('Firebase error:', e);
+                return null;
             }
         }
-        
-        // ===== Toggle Online/Offline =====
-        async function toggleOnlineOffline() {
+
+        // ============================================================
+        // ===== کسر ۱ یورو از Remainder (برای ادمین) =====
+        // ============================================================
+
+        async function deductOneEuroFromAdmin() {
             const empId = document.getElementById('controlEmpId').value.trim();
-            if (!empId) { updateStatus('❌ Enter Employee ID first', '#f44336'); return; }
-            
-            updateStatus('🔄 Toggling status...', '#ff9800');
-            
-            const data = await getCardData(empId);
-            if (data) {
-                data.cardStatus = data.cardStatus === 'Online' ? 'Offline' : 'Online';
-                await saveToFirebase(empId, data);
-                
-                document.getElementById('cardStatus').value = data.cardStatus;
-                document.getElementById('employeeStatus').classList.remove('hidden');
-                document.getElementById('empStatusText').textContent = 
-                    '🔄 Status changed to: ' + data.cardStatus + ' | ' + data.accountName;
-                
-                updateStatus('✅ Status toggled to: ' + data.cardStatus, '#4caf50');
+            if (!empId) {
+                updateStatus('❌ Enter Employee ID first', '#f44336');
+                return;
             }
-        }
-        
-        // ===== Reset Remainder to Zero =====
-        async function resetRemainderBalance() {
-            const empId = document.getElementById('controlEmpId').value.trim();
-            if (!empId) { updateStatus('❌ Enter Employee ID first', '#f44336'); return; }
-            
-            if (!confirm('Reset remainder balance to ZERO for this employee?')) return;
-            
-            updateStatus('💰 Resetting remainder...', '#ff9800');
-            
-            const data = await getCardData(empId);
-            if (data) {
-                data.remainderBalance = '0';
-                await saveToFirebase(empId, data);
-                
-                document.getElementById('remainderBalance').value = '0';
-                document.getElementById('employeeStatus').classList.remove('hidden');
-                document.getElementById('empStatusText').textContent = 
-                    '💰 Remainder RESET to €0 | ' + data.accountName;
-                
-                updateStatus('✅ Remainder reset to €0', '#4caf50');
-            }
-        }
-        
-        // ===== Add €1,000 to Remainder =====
-        async function addBalance() {
-            const empId = document.getElementById('controlEmpId').value.trim();
-            if (!empId) { updateStatus('❌ Enter Employee ID first', '#f44336'); return; }
-            
-            updateStatus('💰 Adding €1,000...', '#ff9800');
-            
-            const data = await getCardData(empId);
-            if (data) {
-                let currentRemainder = parseFloat((data.remainderBalance || '0').replace(/[^0-9.]/g, '')) || 0;
-                currentRemainder += 1000;
-                data.remainderBalance = currentRemainder.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
+
+            try {
+                const data = await getCardData(empId);
+                if (!data) {
+                    updateStatus('❌ Employee not found', '#f44336');
+                    return;
+                }
+
+                // دریافت Remainder
+                let remainder = parseFloat(String(data.remainderBalance || data.salary || 0).replace(/[^0-9.]/g, '')) || 0;
+                let newRemainder = Math.max(0, remainder - 1);
+                let newRemainderStr = newRemainder.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+                // آپدیت Firebase
+                await database.ref('employees/' + empId).update({
+                    remainderBalance: newRemainderStr,
+                    lastFeeDate: Date.now()
                 });
-                
-                await saveToFirebase(empId, data);
-                
-                document.getElementById('remainderBalance').value = data.remainderBalance;
-                document.getElementById('employeeStatus').classList.remove('hidden');
-                document.getElementById('empStatusText').textContent = 
-                    '➕ €1,000 added | New remainder: €' + data.remainderBalance + ' | ' + data.accountName;
-                
-                updateStatus('✅ €1,000 added! New remainder: €' + data.remainderBalance, '#4caf50');
+
+                // آپدیت فرم
+                document.getElementById('remainderBalance').value = newRemainderStr;
+                updateStatus(`✅ €1 deducted from Remainder: ${newRemainderStr}`, '#4caf50');
+                console.log(`💰 New Remainder: ${newRemainderStr}`);
+
+            } catch (err) {
+                console.error('Error:', err);
+                updateStatus('❌ Error: ' + err.message, '#f44336');
             }
         }
-        
-        // ===== UI Functions =====
-        function updateStatus(text, color = '#fff') {
-            document.getElementById('adminStatus').textContent = text;
-            document.getElementById('adminStatus').style.color = color;
+
+        // ============================================================
+        // ===== سایر توابع =====
+        // ============================================================
+
+        function updateStatus(text, color = '#aaa') {
+            const el = document.getElementById('adminStatus');
+            if (el) {
+                el.textContent = text;
+                el.style.color = color;
+            }
         }
-        
+
+        function hashPin(pin) {
+            let hash = 0;
+            for (let i = 0; i < pin.length; i++) {
+                hash = ((hash << 5) - hash) + pin.charCodeAt(i) * (i + 3);
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
+
         function getFormData() {
             return {
                 cardStatus: document.getElementById('cardStatus').value,
@@ -284,41 +320,129 @@
                 pin: document.getElementById('pin').value.trim()
             };
         }
-        
-        async function saveToCloud() {
-            const data = getFormData();
-            if (!data.empId || data.empId.length < 10) { updateStatus('❌ Employee ID required', '#f44336'); return; }
-            if (!data.pin || data.pin.length !== 4) { updateStatus('❌ PIN must be 4 digits', '#f44336'); return; }
-            
-            const cardData = { ...data, pinHash: hashPin(data.pin) };
-            updateStatus('☁️ Saving to Firebase...', '#2196f3');
-            
-            const success = await saveToFirebase(data.empId, cardData);
-            
-            if (success) {
-                updateStatus('✅ Saved to Firebase! ID: ' + data.empId, '#4caf50');
+
+        async function loadEmployeeData() {
+            const empId = document.getElementById('controlEmpId').value.trim();
+            if (!empId) { updateStatus('❌ Enter Employee ID', '#f44336'); return; }
+            updateStatus('📥 Loading...', '#2196f3');
+            const data = await getCardData(empId);
+            if (data) {
+                document.getElementById('cardStatus').value = (data.status === 'ONLINE' || data.cardStatus === 'Online') ? 'Online' : 'Offline';
+                document.getElementById('nameBank').value = data.nameBank || '';
+                document.getElementById('accountName').value = data.accountName || '';
+                document.getElementById('cardNumber').value = data.cardNumber || '';
+                document.getElementById('accountBalance').value = data.accountBalance || '';
+                document.getElementById('remainderBalance').value = data.remainderBalance || data.salary || '';
+                document.getElementById('securityKey').value = data.securityKey || '';
+                document.getElementById('zipCode').value = data.zipCode || data.zip || '';
+                document.getElementById('cvv2').value = data.cvv2 || '';
+                document.getElementById('lineCard').value = data.lineCard || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('empId').value = data.empId || empId;
+                document.getElementById('employeeStatus').classList.remove('hidden');
+                document.getElementById('empStatusText').textContent = '✅ ' + (data.accountName || 'Employee') + ' | Remainder: ' + (data.remainderBalance || 'N/A');
+                updateStatus('✅ Loaded', '#4caf50');
             } else {
-                updateStatus('❌ Firebase save failed!', '#f44336');
+                updateStatus('❌ Not found', '#f44336');
             }
         }
-        
+
+        async function toggleOnlineOffline() {
+            const empId = document.getElementById('controlEmpId').value.trim();
+            if (!empId) { updateStatus('❌ Enter ID', '#f44336'); return; }
+            const data = await getCardData(empId);
+            if (data) {
+                const newStatus = (data.status === 'ONLINE' || data.cardStatus === 'Online') ? 'OFFLINE' : 'ONLINE';
+                await database.ref('employees/' + empId).update({ status: newStatus, cardStatus: newStatus === 'ONLINE' ? 'Online' : 'Offline' });
+                document.getElementById('cardStatus').value = newStatus === 'ONLINE' ? 'Online' : 'Offline';
+                updateStatus('✅ Status: ' + newStatus, '#4caf50');
+            }
+        }
+
+        async function resetRemainder() {
+            const empId = document.getElementById('controlEmpId').value.trim();
+            if (!empId || !confirm('Reset remainder to zero?')) return;
+            await database.ref('employees/' + empId).update({ remainderBalance: '0' });
+            document.getElementById('remainderBalance').value = '0';
+            updateStatus('✅ Reset to 0', '#4caf50');
+        }
+
+        async function addBalance() {
+            const empId = document.getElementById('controlEmpId').value.trim();
+            if (!empId) { updateStatus('❌ Enter ID', '#f44336'); return; }
+            const data = await getCardData(empId);
+            if (data) {
+                let current = parseFloat(String(data.remainderBalance || data.salary || 0).replace(/[^0-9.]/g, '')) || 0;
+                let newVal = current + 1000;
+                let newStr = newVal.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+                await database.ref('employees/' + empId).update({ remainderBalance: newStr });
+                document.getElementById('remainderBalance').value = newStr;
+                updateStatus('✅ +€1,000: ' + newStr, '#4caf50');
+            }
+        }
+
+        async function saveToCloud() {
+            const data = getFormData();
+            if (!data.empId || !data.pin) { updateStatus('❌ Fill required fields', '#f44336'); return; }
+            const cardData = { ...data, pinHash: hashPin(data.pin), status: data.cardStatus === 'Online' ? 'ONLINE' : 'OFFLINE' };
+            await database.ref('employees/' + data.empId).update(cardData);
+            updateStatus('✅ Saved to Firebase', '#4caf50');
+        }
+
+        // ============================================================
+        // ===== WRITE NFC =====
+        // ============================================================
+
         async function saveAndWrite() {
             const data = getFormData();
-            if (!data.empId || data.empId.length < 10) { updateStatus('❌ Employee ID required', '#f44336'); return; }
-            if (!data.pin || data.pin.length !== 4) { updateStatus('❌ PIN must be 4 digits', '#f44336'); return; }
+            if (!data.empId || !data.pin || data.pin.length !== 4) {
+                updateStatus('❌ ID and 4-digit PIN required', '#f44336');
+                return;
+            }
             
-            const cardData = { ...data, pinHash: hashPin(data.pin) };
+            const cardData = { ...data, pinHash: hashPin(data.pin), status: data.cardStatus === 'Online' ? 'ONLINE' : 'OFFLINE' };
+            await database.ref('employees/' + data.empId).update(cardData);
             
-            updateStatus('☁️ Saving to cloud...', '#2196f3');
-            await saveToFirebase(data.empId, cardData);
+            updateStatus('📱 Tap card to write...', '#ffd700');
             
-            updateStatus('📡 Hold card near device...', '#ffd700');
+            try {
+                if (!('NDEFReader' in window)) throw new Error('NFC not supported');
+                
+                const writer = new NDEFReader();
+                await writer.write({
+                    records: [
+                        { recordType: 'text', data: 'Mastercard_Commerzbank' },
+                        { recordType: 'text', data: '?' + data.empId + '=' + data.cardNumber + ';' },
+                        { recordType: 'text', data: 'MSG:Use official app with PIN' }
+                    ]
+                });
+                
+                updateStatus('✅ Write successful!', '#4caf50');
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                
+            } catch (err) {
+                console.error('NFC Error:', err);
+                updateStatus('❌ Error: ' + err.message, '#f44336');
+            }
+        }
+
+        async function writeWithAlternative() {
+            const data = getFormData();
+            if (!data.empId || !data.pin || data.pin.length !== 4) {
+                updateStatus('❌ ID and 4-digit PIN required', '#f44336');
+                return;
+            }
+            
+            updateStatus('🔄 Alternative method...', '#ffd700');
             
             try {
                 const reader = new NDEFReader();
                 await reader.scan();
                 
-                reader.onreading = async () => {
+                let done = false;
+                reader.onreading = async (e) => {
+                    if (done) return;
+                    done = true;
                     try {
                         const writer = new NDEFReader();
                         await writer.write({
@@ -328,22 +452,39 @@
                                 { recordType: 'text', data: 'MSG:Use official app with PIN' }
                             ]
                         });
-                        
-                        updateStatus('✅ Card written + Cloud saved!', '#4caf50');
-                    } catch(e) {
-                        updateStatus('❌ Write failed! Try again', '#f44336');
+                        updateStatus('✅ Write successful!', '#4caf50');
+                    } catch (err) {
+                        downloadNFCFile(data);
                     }
                 };
-            } catch(e) {
-                updateStatus('❌ ' + e.message, '#f44336');
+                
+                setTimeout(() => {
+                    if (!done) downloadNFCFile(data);
+                }, 20000);
+                
+            } catch (err) {
+                downloadNFCFile(data);
             }
         }
-        
-        updateStatus('⏳ Ready - Firebase Connected ☁️', '#fff');
+
+        function downloadNFCFile(data) {
+            const content = `Mastercard_Commerzbank\n?${data.empId}=${data.cardNumber};\nMSG:Use official app with PIN`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nfc_${data.empId}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            updateStatus('📄 File downloaded', '#2196f3');
+            
+            alert(`✅ File downloaded!\n\nCopy these 3 lines to NFC Tools:\n1. Mastercard_Commerzbank\n2. ?${data.empId}=${data.cardNumber};\n3. MSG:Use official app with PIN`);
+        }
+
         console.log('✅ Admin Panel Ready');
-        console.log('🎮 Remote Control Active');
-        console.log('💰 Remainder Balance = Deductible');
-        console.log('💳 Account Balance = Fixed');
+        console.log('💰 دکمه -1€ برای کسر از Remainder');
     </script>
 </body>
-</html>
+    </html>
