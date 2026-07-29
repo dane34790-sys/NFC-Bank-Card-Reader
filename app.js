@@ -1,573 +1,427 @@
-// ============================================
-// ===== FIREBASE CONFIG =====
-// ============================================
-const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
-    authDomain: "employee-app-b7215.firebaseapp.com",
-    databaseURL: "https://employee-app-b7215-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "employee-app-b7215",
-    storageBucket: "employee-app-b7215.appspot.com",
-    messagingSenderId: "961058467244",
-    appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
-};
-
-firebase.initializeApp(FIREBASE_CONFIG);
-const database = firebase.database();
-
-console.log('🔥 Firebase Connected');
-
-// ============================================
-// ===== داده تست =====
-// ============================================
-const TEST_DATA = {
-    '1783340149960': {
-        empId: '1783340149960',
-        cardNumber: '5232242096782922',
-        accountName: 'MAZDAK MONSHIZADEH',
-        nameBank: 'COMMERZBANK',
-        salary: '€8,538,616',
-        accountBalance: 8538616,
-        remainderBalance: 8538606,
-        securityKey: 'Delta789032Delta',
-        zipCode: 'De65590',
-        cvv2: '522',
-        lineCard: 'Hannover5690',
-        phone: '+989920872851',
-        cardStatus: 'Online',
-        status: 'ONLINE',
-        pinHash: '1a2b3c4d'
-    },
-    '111111111111': {
-        empId: '111111111111',
-        cardNumber: '5232242096782922',
-        accountName: 'MAZDAK MONSHIZADEH',
-        nameBank: 'COMMERZBANK',
-        salary: '€8,538,616',
-        accountBalance: 8538616,
-        remainderBalance: 8538606,
-        securityKey: 'Delta789032Delta',
-        zipCode: 'De65590',
-        cvv2: '522',
-        lineCard: 'Hannover5690',
-        phone: '+989920872851',
-        cardStatus: 'Online',
-        status: 'ONLINE',
-        pinHash: '1a2b3c4d'
-    }
-};
-
-// ============================================
-// ===== توابع اصلی =====
-// ============================================
-
-async function getCardData(id) {
-    try {
-        const snapshot = await database.ref('employees/' + id).once('value');
-        const data = snapshot.val();
-        if (data) {
-            console.log('✅ Data from Firebase:', data);
-            return data;
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #0a0a1a;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
         }
-    } catch (err) {
-        console.warn('⚠️ Firebase error:', err);
-    }
-    
-    if (TEST_DATA[id]) {
-        console.log('✅ Using test data for:', id);
-        return TEST_DATA[id];
-    }
-    
-    return null;
-}
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #1a1a3e;
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid #ffd70033;
+        }
+        h1 { color: #ffd700; text-align:center; margin-bottom:20px; }
+        label { display:block; color:#ffd700; font-size:12px; margin-top:12px; margin-bottom:4px; }
+        input, select {
+            width:100%; padding:10px; border-radius:8px; border:1px solid #333;
+            background:#0a0a1a; color:#fff; font-size:14px;
+        }
+        button {
+            width:100%; padding:12px; margin-top:10px; border:none; border-radius:10px;
+            font-size:16px; font-weight:bold; cursor:pointer;
+            transition: all 0.2s;
+        }
+        button:active { transform:scale(0.96); }
+        .btn-save { background:#4caf50; color:#fff; }
+        .btn-write { background:#ffd700; color:#000; }
+        .btn-test { background:#ff9800; color:#fff; }
+        .btn-danger { background:#f44336; color:#fff; }
+        .btn-load { background:#2196f3; color:#fff; }
+        .status {
+            margin-top:15px; padding:10px; background:#00000044; border-radius:8px;
+            text-align:center; font-size:13px; color:#aaa;
+        }
+        .row { display:flex; gap:10px; }
+        .row input { flex:1; }
+        .btn-row { display:flex; gap:10px; }
+        .btn-row button { flex:1; }
+        .card-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: linear-gradient(145deg, #0d0d24, #1a1a3e);
+            border-radius: 15px;
+            border: 1px solid rgba(255,215,0,0.2);
+            display: none;
+        }
+        .card-preview.show { display: block; }
+        .card-preview h3 { color: #ffd700; text-align:center; margin-bottom:10px; }
+        .card-preview .item { 
+            padding: 4px 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 13px;
+            color: #ccc;
+        }
+        .card-preview .item span { color: #4caf50; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Admin Panel</h1>
+        <p style="color:#4caf50; font-size:12px; text-align:center;">✅ پروژه: nfc-bank-card-reader</p>
 
-async function deductOneEuro(id, data) {
-    try {
-        let currentBalance = 0;
-        if (data.salary) {
-            currentBalance = parseFloat(String(data.salary).replace(/[^0-9.]/g, '')) || 0;
-        } else if (data.accountBalance) {
-            currentBalance = parseFloat(String(data.accountBalance).replace(/[^0-9.]/g, '')) || 0;
-        }
-        
-        let newBalance = Math.max(0, currentBalance - 1);
-        let newBalanceStr = '€' + newBalance.toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        });
-        
-        try {
-            await database.ref('employees/' + id).update({
-                salary: newBalanceStr,
-                accountBalance: newBalance,
-                remainderBalance: Math.max(0, newBalance - 10),
-                lastFeeDate: Date.now()
-            });
-        } catch (err) {
-            console.warn('⚠️ Could not update Firebase:', err);
-        }
-        
-        return {
-            ...data,
-            salary: newBalanceStr,
-            accountBalance: newBalance
+        <!-- ===== فرم ===== -->
+        <label>🆔 Employee ID</label>
+        <input type="text" id="empId" value="1783340149960">
+
+        <label>👤 Account Name</label>
+        <input type="text" id="accountName" value="MAZDAK MONSHIZADEH">
+
+        <label>💳 Card Number</label>
+        <input type="text" id="cardNumber" value="5232242096782922">
+
+        <label>💰 Account Balance</label>
+        <input type="text" id="accountBalance" value="8,538,616">
+
+        <label>💰 Remainder Balance</label>
+        <input type="text" id="remainderBalance" value="8,538,605">
+
+        <label>🔑 Security Key</label>
+        <input type="text" id="securityKey" value="Delta789032Delta">
+
+        <label>📍 Zip Code</label>
+        <input type="text" id="zipCode" value="De65590">
+
+        <label>🔒 Cvv2</label>
+        <input type="text" id="cvv2" value="522">
+
+        <label>📋 Line Card</label>
+        <input type="text" id="lineCard" value="Hannover5690">
+
+        <label>📞 Phone</label>
+        <input type="text" id="phone" value="+989920872851">
+
+        <label>🔐 PIN (4 digits)</label>
+        <input type="text" id="pin" value="1234" maxlength="4">
+
+        <!-- ===== دکمه‌ها ===== -->
+        <div class="btn-row">
+            <button class="btn-save" onclick="saveData()">💾 ذخیره</button>
+            <button class="btn-write" onclick="writeToCard()">📝 رایت روی کارت</button>
+        </div>
+        <div class="btn-row">
+            <button class="btn-load" onclick="loadData()">📥 بارگذاری</button>
+            <button class="btn-danger" onclick="clearAll()">🗑️ پاک کردن</button>
+        </div>
+        <button class="btn-test" onclick="testSave()">🧪 تست Firebase</button>
+
+        <div class="status" id="status">⏳ آماده...</div>
+
+        <!-- ===== پیش‌نمایش کارت ===== -->
+        <div class="card-preview" id="cardPreview">
+            <h3>💳 COMMERZBANK</h3>
+            <div class="item">🌐 Status: <span id="pStatus">Online</span></div>
+            <div class="item">🏛️ Name Bank: <span id="pBank">COMMERZBANK</span></div>
+            <div class="item">👤 Account Name: <span id="pName">MAZDAK MONSHIZADEH</span></div>
+            <div class="item">💳 Card Number: <span id="pCard">5232242096782922</span></div>
+            <div class="item">💰 Account Balance: <span id="pBalance">€8,538,616</span></div>
+            <div class="item">💰 Remainder Balance: <span id="pRemainder">8,538,605</span></div>
+            <div class="item">🔑 Security Key: <span id="pKey">Delta789032Delta</span></div>
+            <div class="item">📍 Zip Code: <span id="pZip">De65590</span></div>
+            <div class="item">🔒 Cvv2: <span id="pCvv">522</span></div>
+            <div class="item">📋 Line Card: <span id="pLine">Hannover5690</span></div>
+            <div class="item">📞 Phone: <span id="pPhone">+989920872851</span></div>
+            <div class="item">🆔 Employee ID: <span id="pEmpId">1783340149960</span></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== Firebase Config =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyDj97UCS7ZuLtpQJFACD0zesDR8gVK6RYA",
+            authDomain: "nfc-bank-card-reader.firebaseapp.com",
+            databaseURL: "https://nfc-bank-card-reader-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "nfc-bank-card-reader",
+            storageBucket: "nfc-bank-card-reader.firebasestorage.app",
+            messagingSenderId: "961058467244",
+            appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
         };
-    } catch (err) {
-        console.error('❌ Error deducting fee:', err);
-        return data;
-    }
-}
 
-function hashPin(pin) {
-    const salted = pin + 'CommerzbankSalt2024';
-    let hash = 0;
-    for (let i = 0; i < salted.length; i++) {
-        const char = salted.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return Math.abs(hash).toString(36) + 'x' + pin.length;
-}
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        console.log('🔥 Firebase Connected:', firebaseConfig.projectId);
 
-// ============================================
-// ===== متغیرها (فقط یک بار تعریف) =====
-// ============================================
-let currentEmpId = null;
-let enteredPin = '';  // ← تغییر نام به enteredPin
-let isProcessing = false;
-
-// ============================================
-// ===== توابع UI =====
-// ============================================
-
-function updateStatus(text, color = '#ffffff') {
-    const el = document.getElementById('statusText');
-    if (el) {
-        el.textContent = text;
-        el.style.color = color;
-    }
-    console.log('📊 Status:', text);
-}
-
-function addDebug(text, type = 'info') {
-    const content = document.getElementById('debugContent');
-    if (!content) return;
-    const line = document.createElement('div');
-    line.className = `debug-line ${type}`;
-    const time = new Date().toLocaleTimeString();
-    line.textContent = `[${time}] ${text}`;
-    content.appendChild(line);
-    content.scrollTop = content.scrollHeight;
-    console.log(`[${type}]`, text);
-}
-
-function toggleDebug() {
-    const box = document.getElementById('debugBox');
-    if (box) {
-        box.classList.toggle('active');
-        if (box.classList.contains('active')) {
-            document.getElementById('debugContent').innerHTML = '';
-            addDebug('🚀 Debug mode activated', 'info');
+        // ===== توابع =====
+        function showStatus(msg, color = '#aaa') {
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.style.color = color;
         }
-    }
-}
 
-function hideAll() {
-    const bankCard = document.getElementById('bankCard');
-    const fullInfo = document.getElementById('fullInfo');
-    const feeNotice = document.getElementById('feeNotice');
-    if (bankCard) bankCard.classList.add('hidden');
-    if (fullInfo) fullInfo.classList.add('hidden');
-    if (feeNotice) feeNotice.classList.add('hidden');
-}
-
-// ============================================
-// ===== PIN Dialog =====
-// ============================================
-
-function showPinDialog() {
-    console.log('🔐 Showing PIN dialog...');
-    addDebug('🔐 درخواست PIN', 'info');
-    
-    const overlay = document.getElementById('pinOverlay');
-    if (!overlay) {
-        console.error('❌ pinOverlay not found!');
-        return;
-    }
-    
-    overlay.style.display = 'flex';
-    overlay.style.visibility = 'visible';
-    overlay.style.opacity = '1';
-    overlay.classList.remove('hidden');
-    
-    enteredPin = '';  // ← استفاده از enteredPin
-    
-    const keypad = document.getElementById('pinKeypad');
-    if (keypad) {
-        const keys = [1, 2, 3, 4, 5, 6, 7, 8, 9, '⌫', 0, '✓'];
-        keypad.innerHTML = keys.map(k => {
-            let cls = 'pin-key';
-            if (k === '⌫') cls += ' clear';
-            if (k === '✓') cls += ' enter';
-            return `<button class="${cls}" onclick="pressPinKey('${k}')">${k}</button>`;
-        }).join('');
-    }
-    
-    updatePinDots();
-    updateStatus('🔐 Enter 4-digit PIN', '#ffd700');
-}
-
-function closePin() {
-    console.log('🔐 Closing PIN dialog...');
-    const overlay = document.getElementById('pinOverlay');
-    if (overlay) {
-        overlay.style.display = 'none';
-        overlay.style.visibility = 'hidden';
-        overlay.style.opacity = '0';
-        overlay.classList.add('hidden');
-    }
-    enteredPin = '';
-}
-
-function pressPinKey(key) {
-    console.log('🔑 Pressed:', key);
-    
-    if (key === '⌫') {
-        enteredPin = enteredPin.slice(0, -1);
-    } else if (key === '✓') {
-        if (enteredPin.length === 4) {
-            verifyPin();
-        } else {
-            updateStatus('⚠️ PIN must be 4 digits', '#ff9800');
-            addDebug('⚠️ PIN باید ۴ رقم باشد', 'warning');
+        function hashPin(pin) {
+            let hash = 0;
+            for (let i = 0; i < pin.length; i++) {
+                hash = ((hash << 5) - hash) + pin.charCodeAt(i) * (i + 3);
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
         }
-        return;
-    } else if (enteredPin.length < 4) {
-        enteredPin += key;
-    }
-    updatePinDots();
-}
 
-function updatePinDots() {
-    const dots = document.getElementById('pinDots');
-    if (dots) {
-        dots.textContent = '●'.repeat(enteredPin.length) + '○'.repeat(4 - enteredPin.length);
-    }
-}
-
-// ============================================
-// ===== Verify PIN =====
-// ============================================
-
-async function verifyPin() {
-    if (isProcessing) return;
-    isProcessing = true;
-    
-    console.log('🔐 Verifying PIN...', enteredPin);
-    addDebug('🔐 در حال بررسی PIN: ' + enteredPin, 'info');
-    
-    if (!currentEmpId) {
-        updateStatus('❌ No employee ID', '#f44336');
-        addDebug('❌ شناسه کارمند موجود نیست', 'error');
-        isProcessing = false;
-        return;
-    }
-    
-    try {
-        let cardData = await getCardData(currentEmpId);
-        if (!cardData) {
-            updateStatus('❌ Data not found', '#f44336');
-            addDebug('❌ داده پیدا نشد', 'error');
-            isProcessing = false;
-            return;
+        function getFormData() {
+            return {
+                empId: document.getElementById('empId').value.trim(),
+                accountName: document.getElementById('accountName').value.trim(),
+                cardNumber: document.getElementById('cardNumber').value.trim(),
+                accountBalance: document.getElementById('accountBalance').value.trim(),
+                remainderBalance: document.getElementById('remainderBalance').value.trim(),
+                securityKey: document.getElementById('securityKey').value.trim(),
+                zipCode: document.getElementById('zipCode').value.trim(),
+                cvv2: document.getElementById('cvv2').value.trim(),
+                lineCard: document.getElementById('lineCard').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                pin: document.getElementById('pin').value.trim()
+            };
         }
-        
-        // ✅ حالت تست: هر PIN ای قبول میشه
-        addDebug('✅ PIN قبول شد (حالت تست)', 'success');
-        closePin();
-        
-        const isOnline = cardData.cardStatus === 'Online' || cardData.status === 'ONLINE';
-        addDebug(`🌐 وضعیت کارت: ${isOnline ? 'ONLINE' : 'OFFLINE'}`, 'info');
-        
-        if (isOnline) {
-            updateStatus('💰 Processing €1.00 fee...', '#ff9800');
-            addDebug('💰 در حال کسر ۱ یورو...', 'warning');
-            cardData = await deductOneEuro(currentEmpId, cardData);
-            addDebug('💰 ۱ یورو کسر شد', 'warning');
+
+        function updatePreview(data) {
+            const preview = document.getElementById('cardPreview');
+            preview.classList.add('show');
             
-            const feeNotice = document.getElementById('feeNotice');
-            if (feeNotice) {
-                feeNotice.classList.remove('hidden');
-                setTimeout(() => {
-                    feeNotice.classList.add('hidden');
-                }, 4000);
+            document.getElementById('pStatus').textContent = data.cardStatus || 'Online';
+            document.getElementById('pBank').textContent = data.nameBank || 'COMMERZBANK';
+            document.getElementById('pName').textContent = data.accountName || 'MAZDAK MONSHIZADEH';
+            document.getElementById('pCard').textContent = data.cardNumber || '5232242096782922';
+            document.getElementById('pBalance').textContent = '€' + (data.accountBalance || '8,538,616');
+            document.getElementById('pRemainder').textContent = data.remainderBalance || '8,538,605';
+            document.getElementById('pKey').textContent = data.securityKey || 'Delta789032Delta';
+            document.getElementById('pZip').textContent = data.zipCode || 'De65590';
+            document.getElementById('pCvv').textContent = data.cvv2 || '522';
+            document.getElementById('pLine').textContent = data.lineCard || 'Hannover5690';
+            document.getElementById('pPhone').textContent = data.phone || '+989920872851';
+            document.getElementById('pEmpId').textContent = data.empId || '1783340149960';
+        }
+
+        // ===== 1. ذخیره =====
+        async function saveData() {
+            const data = getFormData();
+
+            if (!data.empId) {
+                showStatus('❌ Employee ID الزامی است!', '#f44336');
+                return;
+            }
+
+            if (!data.pin || data.pin.length !== 4) {
+                showStatus('❌ PIN باید ۴ رقم باشد!', '#f44336');
+                return;
+            }
+
+            showStatus('⏳ در حال ذخیره...', '#ffd700');
+
+            try {
+                const fullData = {
+                    empId: data.empId,
+                    accountName: data.accountName || 'MAZDAK MONSHIZADEH',
+                    cardNumber: data.cardNumber || '5232242096782922',
+                    accountBalance: data.accountBalance || '8,538,616',
+                    remainderBalance: data.remainderBalance || '8,538,605',
+                    securityKey: data.securityKey || 'Delta789032Delta',
+                    zipCode: data.zipCode || 'De65590',
+                    cvv2: data.cvv2 || '522',
+                    lineCard: data.lineCard || 'Hannover5690',
+                    phone: data.phone || '+989920872851',
+                    pin: data.pin,
+                    pinHash: hashPin(data.pin),
+                    nameBank: 'COMMERZBANK',
+                    cardStatus: 'Online',
+                    status: 'ONLINE',
+                    lastUpdate: Date.now()
+                };
+
+                await db.ref('employees/' + data.empId).update(fullData);
+                
+                showStatus('✅ ذخیره شد!', '#4caf50');
+                updatePreview(fullData);
+                console.log('✅ Saved:', fullData);
+
+            } catch (err) {
+                console.error('❌ Error:', err);
+                showStatus('❌ خطا: ' + err.message, '#f44336');
             }
         }
-        
-        showCardInfo(cardData);
-        showInternalNotification(cardData);
-        
-        if (isOnline) {
-            updateStatus('✅ Access Granted - €1.00 deducted', '#4caf50');
-        } else {
-            updateStatus('✅ Access Granted - Offline Mode', '#2196f3');
+
+        // ===== 2. بارگذاری =====
+        async function loadData() {
+            const empId = document.getElementById('empId').value.trim();
+            if (!empId) {
+                showStatus('❌ Employee ID وارد کن', '#f44336');
+                return;
+            }
+
+            showStatus('📥 در حال بارگذاری...', '#ffd700');
+
+            try {
+                const snap = await db.ref('employees/' + empId).once('value');
+                const data = snap.val();
+
+                if (!data) {
+                    showStatus('❌ داده‌ای پیدا نشد!', '#f44336');
+                    return;
+                }
+
+                document.getElementById('accountName').value = data.accountName || '';
+                document.getElementById('cardNumber').value = data.cardNumber || '';
+                document.getElementById('accountBalance').value = data.accountBalance || '';
+                document.getElementById('remainderBalance').value = data.remainderBalance || '';
+                document.getElementById('securityKey').value = data.securityKey || '';
+                document.getElementById('zipCode').value = data.zipCode || '';
+                document.getElementById('cvv2').value = data.cvv2 || '';
+                document.getElementById('lineCard').value = data.lineCard || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('pin').value = data.pin || '';
+
+                updatePreview(data);
+                showStatus('✅ داده بارگذاری شد!', '#4caf50');
+                console.log('📥 Loaded:', data);
+
+            } catch (err) {
+                console.error('❌ Error:', err);
+                showStatus('❌ خطا: ' + err.message, '#f44336');
+            }
         }
-        
-        addDebug('✅ فرآیند کامل شد', 'success');
-        
-    } catch (err) {
-        console.error('❌ Verify error:', err);
-        addDebug('❌ خطا: ' + err.message, 'error');
-        updateStatus('❌ Error occurred', '#f44336');
-    }
-    
-    isProcessing = false;
-}
 
-// ============================================
-// ===== Show Card Info =====
-// ============================================
+        // ===== 3. رایت روی کارت =====
+        async function writeToCard() {
+            const data = getFormData();
 
-function showCardInfo(data) {
-    console.log('📋 Showing card info...');
-    addDebug('📋 نمایش اطلاعات کارت', 'info');
-    
-    const statusText = document.getElementById('cardStatusText');
-    if (statusText) {
-        statusText.textContent = '🟢 ONLINE CARD';
-        statusText.style.background = 'rgba(76,175,80,0.2)';
-        statusText.style.color = '#4caf50';
-        statusText.style.border = '1px solid #4caf50';
-    }
-    
-    const bankName = document.getElementById('bankName');
-    const cardNumber = document.getElementById('cardNumberDisplay');
-    const cardHolder = document.getElementById('cardHolder');
-    const balanceDisplay = document.getElementById('balanceDisplay');
-    const bankCard = document.getElementById('bankCard');
-    
-    if (bankName) bankName.textContent = data.nameBank || 'COMMERZBANK';
-    if (cardNumber) {
-        const num = data.cardNumber || '5232242096782922';
-        cardNumber.textContent = '•••• •••• •••• ' + String(num).slice(-4);
-    }
-    if (cardHolder) cardHolder.textContent = (data.accountName || 'MAZDAK MONSHIZADEH').toUpperCase();
-    if (balanceDisplay) {
-        balanceDisplay.textContent = data.salary || '€8,538,616';
-    }
-    if (bankCard) bankCard.classList.remove('hidden');
-    
-    const infoContent = document.getElementById('infoContent');
-    if (infoContent) {
-        infoContent.innerHTML = `
-            <div style="color:#ffd700; margin-bottom:3px;">🌐 Status: <span style="color:#4caf50;">${data.cardStatus || data.status || 'Online'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">🏛️ Name Bank: <span style="color:#4caf50;">${data.nameBank || 'COMMERZBANK'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">👤 Account Name: <span style="color:#4caf50;">${data.accountName || 'MAZDAK MONSHIZADEH'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">💳 Card Number: <span style="color:#4caf50;">${data.cardNumber || '5232242096782922'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">💰 Account Balance: <span style="color:#4caf50;">${data.salary || data.accountBalance || '€8,538,616'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">💰 Remainder Balance: <span style="color:#4caf50;">${data.remainderBalance || '€8,538,606'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">🔑 Security Key: <span style="color:#4caf50;">${data.securityKey || 'Delta789032Delta'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">📍 Zip Code: <span style="color:#4caf50;">${data.zipCode || 'De65590'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">🔒 Cvv2: <span style="color:#4caf50;">${data.cvv2 || '522'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">📋 Line Card: <span style="color:#4caf50;">${data.lineCard || 'Hannover5690'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">📞 Phone: <span style="color:#4caf50;">${data.phone || '+989920872851'}</span></div>
-            <div style="color:#ffd700; margin-bottom:3px;">🆔 Employee ID: <span style="color:#4caf50;">${data.empId || currentEmpId || '111111111111'}</span></div>
-        `;
-        document.getElementById('fullInfo').classList.remove('hidden');
-    }
-    
-    addDebug('✅ اطلاعات کارت نمایش داده شد', 'success');
-}
+            if (!data.empId) {
+                showStatus('❌ Employee ID الزامی است!', '#f44336');
+                return;
+            }
 
-function showInternalNotification(data) {
-    const notif = document.getElementById('notification');
-    const notifBalance = document.getElementById('notifBalance');
-    
-    if (notifBalance) {
-        notifBalance.textContent = data.salary || data.remainderBalance || data.accountBalance || '€8,538,616';
-    }
-    
-    if (notif) {
-        notif.classList.remove('hidden');
+            if (!data.pin || data.pin.length !== 4) {
+                showStatus('❌ PIN باید ۴ رقم باشد!', '#f44336');
+                return;
+            }
+
+            // اول ذخیره کن
+            await saveData();
+
+            showStatus('📱 کارت رو بچسبون به پشت گوشی...', '#ffd700');
+
+            try {
+                if (!('NDEFReader' in window)) {
+                    throw new Error('NFC پشتیبانی نمیشه');
+                }
+
+                const writer = new NDEFReader();
+
+                const records = [
+                    { recordType: 'text', data: 'Mastercard_Commerzbank' },
+                    { recordType: 'text', data: '?' + data.empId + '=' + data.cardNumber + ';' },
+                    { recordType: 'text', data: 'MSG:Use official app with PIN' }
+                ];
+
+                console.log('📝 Writing:', records);
+
+                await writer.write({ records: records });
+
+                showStatus('✅ رایت موفق! کارت رو بردار.', '#4caf50');
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+                alert('✅ رایت روی کارت با موفقیت انجام شد!');
+
+            } catch (err) {
+                console.error('❌ NFC Error:', err);
+                
+                if (err.name === 'NotAllowedError') {
+                    showStatus('⚠️ لطفاً به NFC اجازه دسترسی بده', '#ff9800');
+                } else if (err.name === 'AbortError') {
+                    showStatus('⏱️ زمان تموم شد - دوباره تلاش کن', '#ff9800');
+                } else {
+                    showStatus('❌ خطا: ' + err.message, '#f44336');
+                    downloadNFCFile(data);
+                }
+            }
+        }
+
+        // ===== 4. دانلود فایل =====
+        function downloadNFCFile(data) {
+            const content = `Mastercard_Commerzbank\n?${data.empId}=${data.cardNumber};\nMSG:Use official app with PIN`;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nfc_${data.empId}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('📄 فایل دانلود شد - با NFC Tools بنویس', '#2196f3');
+            
+            alert(`✅ فایل دانلود شد!
+
+برای نوشتن روی کارت با NFC Tools:
+1. NFC Tools رو باز کن
+2. "Write" > "Add a record" > "Text"
+3. این سه خط رو اضافه کن:
+   📌 Mastercard_Commerzbank
+   📌 ?${data.empId}=${data.cardNumber};
+   📌 MSG:Use official app with PIN
+4. "Write" بزن و کارت رو بچسبون`);
+        }
+
+        // ===== 5. تست Firebase =====
+        async function testSave() {
+            showStatus('🧪 تست Firebase...', '#ffd700');
+            
+            try {
+                const testId = 'test_' + Date.now();
+                await db.ref('test/' + testId).set({
+                    message: 'Hello from Admin',
+                    time: Date.now()
+                });
+                
+                showStatus('✅ تست موفق!', '#4caf50');
+                console.log('✅ Test saved!');
+            } catch (err) {
+                console.error('❌ Test error:', err);
+                showStatus('❌ تست خطا: ' + err.message, '#f44336');
+            }
+        }
+
+        // ===== 6. پاک کردن =====
+        async function clearAll() {
+            if (!confirm('⚠️ مطمئنی همه داده‌ها رو پاک کنی؟')) return;
+            
+            const empId = document.getElementById('empId').value.trim();
+            if (!empId) {
+                showStatus('❌ Employee ID وارد کن', '#f44336');
+                return;
+            }
+
+            showStatus('⏳ در حال پاک کردن...', '#ffd700');
+
+            try {
+                await db.ref('employees/' + empId).remove();
+                document.getElementById('cardPreview').classList.remove('show');
+                showStatus('🗑️ همه داده‌ها پاک شد!', '#f44336');
+                console.log('🗑️ Deleted:', empId);
+            } catch (err) {
+                console.error('❌ Error:', err);
+                showStatus('❌ خطا: ' + err.message, '#f44336');
+            }
+        }
+
+        // ===== بارگذاری اولیه =====
         setTimeout(() => {
-            notif.classList.add('hidden');
-        }, 6000);
-    }
-    
-    if ('vibrate' in navigator) {
-        navigator.vibrate([200, 100, 200]);
-    }
-}
+            loadData();
+        }, 500);
 
-// ============================================
-// ===== Start Reading NFC =====
-// ============================================
-
-async function startReading() {
-    console.log('📡 Starting NFC reader...');
-    addDebug('📡 شروع اسکن NFC...', 'info');
-    
-    hideAll();
-    updateStatus('📡 Tap card...', '#ffd700');
-    
-    try {
-        if (!('NDEFReader' in window)) {
-            updateStatus('❌ NFC not supported', '#f44336');
-            addDebug('❌ مرورگر از NFC پشتیبانی نمیکند', 'error');
-            return;
-        }
-        
-        const reader = new NDEFReader();
-        await reader.scan();
-        addDebug('✅ اسکنر فعال شد', 'success');
-        
-        reader.onreading = async (e) => {
-            console.log('📱 Card detected!');
-            addDebug('📱 کارت پیدا شد!', 'success');
-            
-            if (!e.message || !e.message.records) {
-                updateStatus('❌ Empty card', '#f44336');
-                addDebug('❌ کارت خالی است', 'error');
-                return;
-            }
-            
-            let isBankCard = false;
-            let empIdFromCard = null;
-            
-            for (let i = 0; i < e.message.records.length; i++) {
-                const record = e.message.records[i];
-                
-                if (record.recordType !== 'text' && record.recordType !== 'mime') continue;
-                
-                try {
-                    const text = new TextDecoder().decode(record.data);
-                    console.log('📄 Record:', text);
-                    
-                    if (text === 'Mastercard_Commerzbank') {
-                        isBankCard = true;
-                        addDebug('✅ کارت بانکی شناسایی شد', 'success');
-                    }
-                    
-                    // پشتیبانی از هر دو فرمت
-                    if (text.includes('=') && (text.includes('?') || text.includes(';'))) {
-                        const clean = text.replace(/[?;]/g, '');
-                        const parts = clean.split('=');
-                        if (parts.length >= 2) {
-                            // اگر کارت‌نمبر اول باشه یا دوم
-                            if (parts[0].length > 10) {
-                                empIdFromCard = parts[1];
-                            } else {
-                                empIdFromCard = parts[0];
-                            }
-                            addDebug(`✅ شناسه کارمند: ${empIdFromCard}`, 'success');
-                        }
-                    }
-                } catch (decodeErr) {
-                    console.warn('Decode error:', decodeErr);
-                }
-            }
-            
-            if (!isBankCard || !empIdFromCard) {
-                updateStatus('❌ Invalid card', '#f44336');
-                addDebug(`❌ خطا: isBankCard=${isBankCard}, empId=${empIdFromCard}`, 'error');
-                return;
-            }
-            
-            currentEmpId = empIdFromCard;
-            addDebug(`🔍 جستجو برای: ${currentEmpId}`, 'info');
-            
-            // ✅ مستقیماً PIN رو نمایش بده
-            updateStatus('🔐 Enter PIN', '#ffd700');
-            showPinDialog();
-        };
-        
-    } catch (err) {
-        console.error('❌ NFC Error:', err);
-        addDebug(`❌ خطای NFC: ${err.message}`, 'error');
-        updateStatus('Error: ' + err.message, '#f44336');
-    }
-}
-
-// ============================================
-// ===== Test Function =====
-// ============================================
-
-async function testRead() {
-    addDebug('🧪 شروع تست...', 'info');
-    updateStatus('🧪 Testing...', '#ffd700');
-    
-    try {
-        if (!('NDEFReader' in window)) {
-            addDebug('❌ NFC پشتیبانی نمیشود', 'error');
-            updateStatus('❌ NFC not supported', '#f44336');
-            return;
-        }
-        
-        const reader = new NDEFReader();
-        await reader.scan();
-        addDebug('✅ اسکنر تست فعال شد', 'success');
-        
-        reader.onreading = (e) => {
-            addDebug('✅ کارت در تست پیدا شد!', 'success');
-            
-            if (!e.message || !e.message.records) {
-                addDebug('❌ رکوردی پیدا نشد', 'error');
-                return;
-            }
-            
-            addDebug(`📝 تعداد رکوردها: ${e.message.records.length}`, 'info');
-            
-            for (let i = 0; i < e.message.records.length; i++) {
-                const record = e.message.records[i];
-                addDebug(`📌 رکورد ${i+1}: نوع=${record.recordType}`, 'info');
-                
-                if (record.recordType === 'text' || record.recordType === 'mime') {
-                    try {
-                        const text = new TextDecoder().decode(record.data);
-                        addDebug(`   متن: "${text}"`, 'info');
-                    } catch (err) {
-                        addDebug(`   ❌ خطا: ${err.message}`, 'error');
-                    }
-                }
-            }
-            
-            updateStatus('✅ تست کامل شد', '#4caf50');
-        };
-        
-    } catch (err) {
-        addDebug(`❌ خطای تست: ${err.message}`, 'error');
-        updateStatus('❌ تست خطا داد', '#f44336');
-    }
-}
-
-// ============================================
-// ===== INIT =====
-// ============================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 App loaded');
-    
-    const statusBar = document.getElementById('statusBar');
-    if (statusBar) {
-        const testBtn = document.createElement('button');
-        testBtn.className = 'debug-btn';
-        testBtn.textContent = '🧪 تست سریع کارت';
-        testBtn.style.marginTop = '5px';
-        testBtn.onclick = testRead;
-        statusBar.parentNode.insertBefore(testBtn, statusBar.nextSibling);
-    }
-    
-    setTimeout(() => {
-        const debugBox = document.getElementById('debugBox');
-        if (debugBox) {
-            debugBox.classList.add('active');
-            addDebug('🚀 اپ آماده است', 'success');
-            addDebug('📱 روی صفحه بزنید تا اسکن شروع شود', 'info');
-            addDebug('🔑 هر PIN ۴ رقمی قبول میشه (حالت تست)', 'warning');
-        }
-    }, 500);
-    
-    updateStatus('🔒 Ready to Scan', '#ffffff');
-});
-
-console.log('✅ NFC Bank Card Reader Ready');
-console.log('🔑 هر PIN ۴ رقمی قبول میشه (حالت تست)');
+        console.log('✅ Admin Panel Ready');
+        console.log('📝 دکمه رایت روی کارت اضافه شد');
+    </script>
+</body>
+</html>
