@@ -11,7 +11,7 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background: url('images/bg-main.png') center/cover no-repeat fixed;
+            background: url('bg-main.png') center/cover no-repeat fixed;
             color: #fff;
             font-family: -apple-system, 'Segoe UI', sans-serif;
             min-height: 100vh;
@@ -30,15 +30,14 @@
         .container {
             max-width: 480px;
             width: 95%;
-            background: url('images/frame.png') center/cover no-repeat;
+            background: url('frame.png') center/cover no-repeat;
             border-radius: 32px;
             padding: 30px 24px 35px;
             border: 1.5px solid rgba(255, 215, 0, 0.2);
             box-shadow: 
                 0 30px 80px rgba(0,0,0,0.9), 
                 0 0 60px rgba(255,215,0,0.08),
-                0 0 120px rgba(0,180,255,0.04),
-                inset 0 1px 0 rgba(255,255,255,0.03);
+                0 0 120px rgba(0,180,255,0.04);
             position:relative;
             z-index:1;
         }
@@ -49,10 +48,7 @@
             border-radius:32px;
             z-index:0;
         }
-        .container > * {
-            position:relative;
-            z-index:1;
-        }
+        .container > * { position:relative; z-index:1; }
         .app-header { text-align:center; margin-bottom:25px; }
         .app-title {
             font-size:30px; font-weight:900;
@@ -64,76 +60,50 @@
         .app-subtitle { color:rgba(255,255,255,0.5); font-size:14px; letter-spacing:3px; margin-top:4px; }
         
         .nfc-area {
-            text-align:center; 
-            padding:30px 20px;
+            text-align:center; padding:30px 20px;
             border:2px dashed rgba(255,215,0,0.25);
-            border-radius:24px; 
-            cursor:pointer;
-            background: url('images/nfc-bg.png') center/cover no-repeat;
+            border-radius:24px; cursor:pointer;
+            background: url('nfc-bg.png') center/cover no-repeat;
             transition:all 0.3s;
             min-height:220px;
-            display:flex; 
-            flex-direction:column; 
-            align-items:center; 
-            justify-content:center;
-            position:relative;
-            overflow:hidden;
+            display:flex; flex-direction:column; 
+            align-items:center; justify-content:center;
+            position:relative; overflow:hidden;
         }
         .nfc-area::before {
             content:'';
-            position:absolute;
-            top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.45);
-            border-radius:24px;
-            z-index:0;
+            position:absolute; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.45); border-radius:24px; z-index:0;
         }
-        .nfc-area:active { 
-            border-color:#ffd700; 
-            transform:scale(0.98);
-            box-shadow:0 0 40px rgba(255,215,0,0.1);
-        }
-        .nfc-icon { 
-            font-size:70px; 
-            margin-bottom:12px;
-            animation:pulse 2s ease-in-out infinite;
-            position:relative; z-index:1;
-        }
-        @keyframes pulse {
-            0%,100% { transform:scale(1); }
-            50% { transform:scale(1.05); }
-        }
-        .nfc-text { 
-            color:#ffd700; 
-            font-size:20px; 
-            font-weight:700;
-            letter-spacing:1px;
-            position:relative; z-index:1;
-        }
-        .nfc-hint { 
-            color:rgba(255,255,255,0.6); 
-            font-size:12px; 
-            margin-top:8px;
-            letter-spacing:2px;
-            position:relative; z-index:1;
-        }
+        .nfc-area:active { border-color:#ffd700; transform:scale(0.98); }
+        .nfc-icon { font-size:70px; margin-bottom:12px; animation:pulse 2s ease-in-out infinite; position:relative; z-index:1; }
+        @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.05); } }
+        .nfc-text { color:#ffd700; font-size:20px; font-weight:700; letter-spacing:1px; position:relative; z-index:1; }
+        .nfc-hint { color:rgba(255,255,255,0.6); font-size:12px; margin-top:8px; letter-spacing:2px; position:relative; z-index:1; }
         
-        .status-bar { 
-            margin-top:15px; padding:14px; 
-            background:rgba(0,0,0,0.5); border-radius:14px; 
-            text-align:center; border:1px solid rgba(255,255,255,0.08);
-        }
+        .status-bar { margin-top:15px; padding:14px; background:rgba(0,0,0,0.5); border-radius:14px; text-align:center; border:1px solid rgba(255,255,255,0.08); }
         #statusText { font-size:15px; font-weight:600; color:#aaa; letter-spacing:1px; }
 
+        /* ===== صفحه PIN ===== */
         .pin-overlay {
             display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.93); z-index:99999;
+            z-index:99999;
             justify-content:center; align-items:center; flex-direction:column;
+            background: url('pin-bg.png') center/cover no-repeat;
+        }
+        .pin-overlay::before {
+            content:'';
+            position:absolute; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.6);
+            z-index:0;
         }
         .pin-overlay.active { display:flex !important; }
         .pin-dialog {
-            background:linear-gradient(145deg,#1a1a3e,#0f0f2a);
+            background:linear-gradient(145deg,rgba(26,26,62,0.95),rgba(15,15,42,0.95));
             border:2px solid #ffd700; border-radius:24px;
             padding:30px 25px; max-width:320px; width:90%; text-align:center;
+            position:relative; z-index:1;
+            backdrop-filter:blur(10px);
         }
         .pin-title { color:#ffd700; font-size:22px; font-weight:700; margin-bottom:4px; }
         .pin-sub { color:rgba(255,255,255,0.4); font-size:12px; margin-bottom:12px; }
@@ -155,11 +125,9 @@
         /* ===== کارت بانکی ===== */
         .bank-card {
             margin-top:15px;
-            background: url('images/card nfc-bg.png') center/100% 100% no-repeat;
-            border-radius:16px;
-            position:relative;
-            display:none;
-            width:100%;
+            background: url('card nfc-bg.png') center/100% 100% no-repeat;
+            border-radius:16px; position:relative;
+            display:none; width:100%;
             aspect-ratio:1.58/1;
             box-shadow:0 20px 50px rgba(0,0,0,0.7);
         }
@@ -180,14 +148,8 @@
             position:absolute; bottom:8%; right:5%; z-index:2;
             display:flex; align-items:center;
         }
-        .mc-red {
-            width:30px; height:30px; background:#eb001b; border-radius:50%;
-            opacity:1; margin-right:-7px;
-        }
-        .mc-yellow {
-            width:30px; height:30px; background:#f79e1b; border-radius:50%;
-            opacity:1;
-        }
+        .mc-red { width:30px; height:30px; background:#eb001b; border-radius:50%; opacity:1; margin-right:-7px; }
+        .mc-yellow { width:30px; height:30px; background:#f79e1b; border-radius:50%; opacity:1; }
 
         .card-number {
             position:absolute; top:58%; left:50%; transform:translate(-50%,-50%); z-index:2;
@@ -195,20 +157,17 @@
             color:#000; text-align:center;
             font-family:'Courier New', monospace; white-space:nowrap;
         }
-
         .card-holder {
             position:absolute; bottom:8%; left:5%; z-index:2;
             font-size:15px; font-weight:900; letter-spacing:2px;
             color:#000; text-transform:uppercase;
             font-family:'Courier New', monospace;
         }
-
         .balance-display {
             position:absolute; bottom:8%; left:50%; transform:translateX(-50%); z-index:2;
             font-size:20px; font-weight:900; color:#000;
             font-family:'Courier New', monospace;
         }
-
         .fee-notice { 
             background:rgba(255,152,0,0.3); border:1px solid #ff9800; 
             border-radius:6px; padding:5px; text-align:center; margin-top:8px; 
@@ -239,23 +198,10 @@
             background:radial-gradient(circle, rgba(100,0,255,0.04) 0%, transparent 70%);
             border-radius:50%;
         }
-        #fullInfo h3 { 
-            color:#ffd700; margin-bottom:10px; text-align:center; 
-            font-size:14px; letter-spacing:2px; position:relative; z-index:1;
-        }
-        #infoContent { 
-            font-family:'Courier New',monospace; font-size:10px; 
-            line-height:1.9; color:#ffd700; position:relative; z-index:1;
-        }
-        #infoContent div { 
-            padding:2px 6px; border-bottom:1px solid rgba(255,215,0,0.04);
-            display:flex; justify-content:space-between; align-items:center;
-            border-radius:5px;
-        }
-        #infoContent span { 
-            font-weight:bold; text-align:right;
-            color:#00e676; text-shadow:0 0 8px rgba(0,230,118,0.1);
-        }
+        #fullInfo h3 { color:#ffd700; margin-bottom:10px; text-align:center; font-size:14px; letter-spacing:2px; position:relative; z-index:1; }
+        #infoContent { font-family:'Courier New',monospace; font-size:10px; line-height:1.9; color:#ffd700; position:relative; z-index:1; }
+        #infoContent div { padding:2px 6px; border-bottom:1px solid rgba(255,215,0,0.04); display:flex; justify-content:space-between; align-items:center; border-radius:5px; }
+        #infoContent span { font-weight:bold; text-align:right; color:#00e676; text-shadow:0 0 8px rgba(0,230,118,0.1); }
         
         .notification-toast {
             position:fixed; bottom:25px; left:50%; transform:translateX(-50%);
