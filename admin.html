@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔧 Admin Panel</title>
+    <title>🔧 Admin Panel - Unified</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
@@ -22,7 +22,17 @@
             border-radius: 20px;
             border: 1px solid #ffd70033;
         }
-        h1 { color: #ffd700; text-align:center; margin-bottom:20px; }
+        h1 { color: #ffd700; text-align:center; margin-bottom:5px; }
+        .subtitle { color:#4caf50; font-size:11px; text-align:center; margin-bottom:20px; }
+        .sync-badge {
+            display: inline-block;
+            background: rgba(76,175,80,0.15);
+            color: #4caf50;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            border: 1px solid rgba(76,175,80,0.3);
+        }
         label { display:block; color:#ffd700; font-size:12px; margin-top:12px; margin-bottom:4px; }
         input, select {
             width:100%; padding:10px; border-radius:8px; border:1px solid #333;
@@ -39,6 +49,7 @@
         .btn-test { background:#ff9800; color:#fff; }
         .btn-danger { background:#f44336; color:#fff; }
         .btn-load { background:#2196f3; color:#fff; }
+        .btn-sync { background:#9c27b0; color:#fff; }
         .status {
             margin-top:15px; padding:10px; background:#00000044; border-radius:8px;
             text-align:center; font-size:13px; color:#aaa;
@@ -64,25 +75,50 @@
             color: #ccc;
         }
         .card-preview .item span { color: #4caf50; }
+        .warning-box {
+            background: rgba(255,152,0,0.15);
+            border: 1px solid #ff9800;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #ff9800;
+            text-align: center;
+            display: none;
+        }
+        .warning-box.show { display: block; }
+        .security-notice {
+            background: rgba(244,67,54,0.1);
+            border: 1px solid #f44336;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 11px;
+            color: #f44336;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔧 Admin Panel</h1>
-        <p style="color:#4caf50; font-size:12px; text-align:center;">✅ پروژه: nfc-bank-card-reader</p>
+        <p class="subtitle">
+            ✅ پروژه: employee-app-b7215 
+            <span class="sync-badge">🔄 همگام‌سازی شده</span>
+        </p>
 
         <!-- ===== فرم ===== -->
-        <label>🆔 Employee ID</label>
-        <input type="text" id="empId" value="1783340149960">
+        <label>🆔 Employee ID (۱۳ رقم)</label>
+        <input type="text" id="empId" value="1783340149960" maxlength="13">
 
         <label>👤 Account Name</label>
         <input type="text" id="accountName" value="MAZDAK MONSHIZADEH">
 
-        <label>💳 Card Number</label>
-        <input type="text" id="cardNumber" value="5232242096782922">
+        <label>💳 Card Number (۱۶ رقم)</label>
+        <input type="text" id="cardNumber" value="5232242096782922" maxlength="16">
 
-        <label>💰 Account Balance</label>
-        <input type="text" id="accountBalance" value="8,538,616">
+        <label>💰 Salary (€)</label>
+        <input type="text" id="salary" value="8,538,616">
 
         <label>💰 Remainder Balance</label>
         <input type="text" id="remainderBalance" value="8,538,605">
@@ -93,17 +129,20 @@
         <label>📍 Zip Code</label>
         <input type="text" id="zipCode" value="De65590">
 
-        <label>🔒 Cvv2</label>
-        <input type="text" id="cvv2" value="522">
+        <label>🔒 Cvv2 (۳ رقم)</label>
+        <input type="text" id="cvv2" value="522" maxlength="3">
 
         <label>📋 Line Card</label>
         <input type="text" id="lineCard" value="Hannover5690">
 
-        <label>📞 Phone</label>
-        <input type="text" id="phone" value="+989920872851">
+        <label>📞 Phone (۸ رقم)</label>
+        <input type="text" id="phone" value="9123434876" maxlength="8">
 
-        <label>🔐 PIN (4 digits)</label>
+        <label>🔐 PIN کارت (۴ رقم)</label>
         <input type="text" id="pin" value="1234" maxlength="4">
+
+        <label>🔑 Password لاگین اپ (۶ رقم)</label>
+        <input type="text" id="password" value="111111" maxlength="6">
 
         <!-- ===== دکمه‌ها ===== -->
         <div class="btn-row">
@@ -112,11 +151,20 @@
         </div>
         <div class="btn-row">
             <button class="btn-load" onclick="loadData()">📥 بارگذاری</button>
-            <button class="btn-danger" onclick="clearAll()">🗑️ پاک کردن</button>
+            <button class="btn-sync" onclick="syncWithEmployeeApp()">🔄 همگام‌سازی</button>
         </div>
         <button class="btn-test" onclick="testSave()">🧪 تست Firebase</button>
+        <button class="btn-danger" onclick="clearAll()">🗑️ پاک کردن</button>
 
         <div class="status" id="status">⏳ آماده...</div>
+
+        <div class="warning-box" id="warningBox">
+            ⚠️ این Employee ID در اپ کارمندی وجود ندارد. لطفاً ابتدا در اپ کارمندی ثبت شود.
+        </div>
+
+        <div class="security-notice">
+            🔒 تمام فیلدها قبل از ذخیره اعتبارسنجی می‌شوند
+        </div>
 
         <!-- ===== پیش‌نمایش کارت ===== -->
         <div class="card-preview" id="cardPreview">
@@ -125,25 +173,26 @@
             <div class="item">🏛️ Name Bank: <span id="pBank">COMMERZBANK</span></div>
             <div class="item">👤 Account Name: <span id="pName">MAZDAK MONSHIZADEH</span></div>
             <div class="item">💳 Card Number: <span id="pCard">5232242096782922</span></div>
-            <div class="item">💰 Account Balance: <span id="pBalance">€8,538,616</span></div>
+            <div class="item">💰 Salary: <span id="pSalary">€8,538,616</span></div>
             <div class="item">💰 Remainder Balance: <span id="pRemainder">8,538,605</span></div>
             <div class="item">🔑 Security Key: <span id="pKey">Delta789032Delta</span></div>
+            <div class="item">🔑 Password: <span id="pPassword">111111</span></div>
             <div class="item">📍 Zip Code: <span id="pZip">De65590</span></div>
             <div class="item">🔒 Cvv2: <span id="pCvv">522</span></div>
             <div class="item">📋 Line Card: <span id="pLine">Hannover5690</span></div>
-            <div class="item">📞 Phone: <span id="pPhone">+989920872851</span></div>
+            <div class="item">📞 Phone: <span id="pPhone">9123434876</span></div>
             <div class="item">🆔 Employee ID: <span id="pEmpId">1783340149960</span></div>
         </div>
     </div>
 
     <script>
-        // ===== Firebase Config =====
+        // ===== 🔥 Firebase Config - پروژه employee-app-b7215 =====
         const firebaseConfig = {
-            apiKey: "AIzaSyDj97UCS7ZuLtpQJFACD0zesDR8gVK6RYA",
-            authDomain: "nfc-bank-card-reader.firebaseapp.com",
-            databaseURL: "https://nfc-bank-card-reader-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "nfc-bank-card-reader",
-            storageBucket: "nfc-bank-card-reader.firebasestorage.app",
+            apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
+            authDomain: "employee-app-b7215.firebaseapp.com",
+            databaseURL: "https://employee-app-b7215-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "employee-app-b7215",
+            storageBucket: "employee-app-b7215.appspot.com",
             messagingSenderId: "961058467244",
             appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
         };
@@ -151,6 +200,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         console.log('🔥 Firebase Connected:', firebaseConfig.projectId);
+        console.log('🔄 این پنل با اپ کارمندی همگام است');
 
         // ===== توابع =====
         function showStatus(msg, color = '#aaa') {
@@ -173,14 +223,15 @@
                 empId: document.getElementById('empId').value.trim(),
                 accountName: document.getElementById('accountName').value.trim(),
                 cardNumber: document.getElementById('cardNumber').value.trim(),
-                accountBalance: document.getElementById('accountBalance').value.trim(),
+                salary: document.getElementById('salary').value.trim(),
                 remainderBalance: document.getElementById('remainderBalance').value.trim(),
                 securityKey: document.getElementById('securityKey').value.trim(),
                 zipCode: document.getElementById('zipCode').value.trim(),
                 cvv2: document.getElementById('cvv2').value.trim(),
                 lineCard: document.getElementById('lineCard').value.trim(),
                 phone: document.getElementById('phone').value.trim(),
-                pin: document.getElementById('pin').value.trim()
+                pin: document.getElementById('pin').value.trim(),
+                password: document.getElementById('password').value.trim()
             };
         }
 
@@ -188,33 +239,55 @@
             const preview = document.getElementById('cardPreview');
             preview.classList.add('show');
             
-            document.getElementById('pStatus').textContent = data.cardStatus || 'Online';
+            document.getElementById('pStatus').textContent = data.cardStatus || data.status || 'Online';
             document.getElementById('pBank').textContent = data.nameBank || 'COMMERZBANK';
             document.getElementById('pName').textContent = data.accountName || 'MAZDAK MONSHIZADEH';
             document.getElementById('pCard').textContent = data.cardNumber || '5232242096782922';
-            document.getElementById('pBalance').textContent = '€' + (data.accountBalance || '8,538,616');
+            document.getElementById('pSalary').textContent = '€' + (data.salary || data.accountBalance || '8,538,616');
             document.getElementById('pRemainder').textContent = data.remainderBalance || '8,538,605';
             document.getElementById('pKey').textContent = data.securityKey || 'Delta789032Delta';
+            document.getElementById('pPassword').textContent = data.password || '111111';
             document.getElementById('pZip').textContent = data.zipCode || 'De65590';
             document.getElementById('pCvv').textContent = data.cvv2 || '522';
             document.getElementById('pLine').textContent = data.lineCard || 'Hannover5690';
-            document.getElementById('pPhone').textContent = data.phone || '+989920872851';
+            document.getElementById('pPhone').textContent = data.phone || '9123434876';
             document.getElementById('pEmpId').textContent = data.empId || '1783340149960';
+        }
+
+        // ===== اعتبارسنجی =====
+        function validateData(data) {
+            if (!data.empId || data.empId.length !== 13) {
+                showStatus('❌ Employee ID باید ۱۳ رقم باشد!', '#f44336');
+                return false;
+            }
+            if (!data.pin || data.pin.length !== 4) {
+                showStatus('❌ PIN باید ۴ رقم باشد!', '#f44336');
+                return false;
+            }
+            if (!data.password || data.password.length !== 6) {
+                showStatus('❌ Password باید ۶ رقم باشد!', '#f44336');
+                return false;
+            }
+            if (!data.phone || data.phone.length < 8) {
+                showStatus('❌ Phone باید حداقل ۸ رقم باشد!', '#f44336');
+                return false;
+            }
+            if (!data.cardNumber || data.cardNumber.length < 16) {
+                showStatus('❌ Card Number باید ۱۶ رقم باشد!', '#f44336');
+                return false;
+            }
+            if (!data.cvv2 || data.cvv2.length !== 3) {
+                showStatus('❌ Cvv2 باید ۳ رقم باشد!', '#f44336');
+                return false;
+            }
+            return true;
         }
 
         // ===== 1. ذخیره =====
         async function saveData() {
             const data = getFormData();
 
-            if (!data.empId) {
-                showStatus('❌ Employee ID الزامی است!', '#f44336');
-                return;
-            }
-
-            if (!data.pin || data.pin.length !== 4) {
-                showStatus('❌ PIN باید ۴ رقم باشد!', '#f44336');
-                return;
-            }
+            if (!validateData(data)) return;
 
             showStatus('⏳ در حال ذخیره...', '#ffd700');
 
@@ -223,26 +296,40 @@
                     empId: data.empId,
                     accountName: data.accountName || 'MAZDAK MONSHIZADEH',
                     cardNumber: data.cardNumber || '5232242096782922',
-                    accountBalance: data.accountBalance || '8,538,616',
-                    remainderBalance: data.remainderBalance || '8,538,605',
+                    
+                    // فیلدهای مهم برای اپ کارمندی
+                    salary: '€' + (data.salary || '8,538,616'),
+                    accountBalance: parseInt(String(data.salary || '8538616').replace(/,/g, '')),
+                    remainderBalance: String(data.remainderBalance || '8538605'),
+                    
+                    // فیلدهای کارت
                     securityKey: data.securityKey || 'Delta789032Delta',
                     zipCode: data.zipCode || 'De65590',
                     cvv2: data.cvv2 || '522',
                     lineCard: data.lineCard || 'Hannover5690',
-                    phone: data.phone || '+989920872851',
+                    phone: data.phone || '9123434876',
+                    
+                    // امنیتی
                     pin: data.pin,
                     pinHash: hashPin(data.pin),
+                    password: data.password,
+                    
+                    // وضعیت
                     nameBank: 'COMMERZBANK',
                     cardStatus: 'Online',
                     status: 'ONLINE',
-                    lastUpdate: Date.now()
+                    
+                    // تایم‌استمپ
+                    lastUpdate: Date.now(),
+                    lastFeeDate: null
                 };
 
                 await db.ref('employees/' + data.empId).update(fullData);
                 
-                showStatus('✅ ذخیره شد!', '#4caf50');
+                showStatus('✅ ذخیره شد! (همگام با اپ کارمندی)', '#4caf50');
                 updatePreview(fullData);
-                console.log('✅ Saved:', fullData);
+                document.getElementById('warningBox').classList.remove('show');
+                console.log('✅ Saved (synced):', fullData);
 
             } catch (err) {
                 console.error('❌ Error:', err);
@@ -266,12 +353,19 @@
 
                 if (!data) {
                     showStatus('❌ داده‌ای پیدا نشد!', '#f44336');
+                    document.getElementById('warningBox').classList.add('show');
                     return;
                 }
 
                 document.getElementById('accountName').value = data.accountName || '';
                 document.getElementById('cardNumber').value = data.cardNumber || '';
-                document.getElementById('accountBalance').value = data.accountBalance || '';
+                
+                let salaryVal = data.salary || data.accountBalance || '';
+                if (typeof salaryVal === 'string') {
+                    salaryVal = salaryVal.replace('€', '').replace(/,/g, '');
+                }
+                document.getElementById('salary').value = String(salaryVal);
+                
                 document.getElementById('remainderBalance').value = data.remainderBalance || '';
                 document.getElementById('securityKey').value = data.securityKey || '';
                 document.getElementById('zipCode').value = data.zipCode || '';
@@ -279,8 +373,10 @@
                 document.getElementById('lineCard').value = data.lineCard || '';
                 document.getElementById('phone').value = data.phone || '';
                 document.getElementById('pin').value = data.pin || '';
+                document.getElementById('password').value = data.password || '';
 
                 updatePreview(data);
+                document.getElementById('warningBox').classList.remove('show');
                 showStatus('✅ داده بارگذاری شد!', '#4caf50');
                 console.log('📥 Loaded:', data);
 
@@ -290,21 +386,62 @@
             }
         }
 
-        // ===== 3. رایت روی کارت =====
+        // ===== 3. همگام‌سازی =====
+        async function syncWithEmployeeApp() {
+            const empId = document.getElementById('empId').value.trim();
+            if (!empId) {
+                showStatus('❌ Employee ID وارد کن', '#f44336');
+                return;
+            }
+
+            showStatus('🔄 در حال همگام‌سازی...', '#ffd700');
+
+            try {
+                const snap = await db.ref('employees/' + empId).once('value');
+                
+                if (!snap.exists()) {
+                    showStatus('⚠️ کارمند پیدا نشد - ابتدا در اپ کارمندی ثبت کن', '#ff9800');
+                    document.getElementById('warningBox').classList.add('show');
+                    return;
+                }
+
+                const existingData = snap.val();
+                
+                const updates = {
+                    cardNumber: document.getElementById('cardNumber').value.trim() || existingData.cardNumber || '5232242096782922',
+                    securityKey: document.getElementById('securityKey').value.trim() || existingData.securityKey || 'Delta789032Delta',
+                    zipCode: document.getElementById('zipCode').value.trim() || existingData.zipCode || 'De65590',
+                    cvv2: document.getElementById('cvv2').value.trim() || existingData.cvv2 || '522',
+                    lineCard: document.getElementById('lineCard').value.trim() || existingData.lineCard || 'Hannover5690',
+                    phone: document.getElementById('phone').value.trim() || existingData.phone || '9123434876',
+                    pin: document.getElementById('pin').value.trim() || existingData.pin || '1234',
+                    pinHash: hashPin(document.getElementById('pin').value.trim() || existingData.pin || '1234'),
+                    password: document.getElementById('password').value.trim() || existingData.password || '111111',
+                    cardStatus: 'Online',
+                    status: 'ONLINE',
+                    nameBank: 'COMMERZBANK',
+                    lastUpdate: Date.now()
+                };
+
+                await db.ref('employees/' + empId).update(updates);
+                await loadData();
+                
+                document.getElementById('warningBox').classList.remove('show');
+                showStatus('✅ همگام‌سازی کامل شد!', '#4caf50');
+                console.log('🔄 Synced:', updates);
+
+            } catch (err) {
+                console.error('❌ Sync error:', err);
+                showStatus('❌ خطا: ' + err.message, '#f44336');
+            }
+        }
+
+        // ===== 4. رایت روی کارت =====
         async function writeToCard() {
             const data = getFormData();
 
-            if (!data.empId) {
-                showStatus('❌ Employee ID الزامی است!', '#f44336');
-                return;
-            }
+            if (!validateData(data)) return;
 
-            if (!data.pin || data.pin.length !== 4) {
-                showStatus('❌ PIN باید ۴ رقم باشد!', '#f44336');
-                return;
-            }
-
-            // اول ذخیره کن
             await saveData();
 
             showStatus('📱 کارت رو بچسبون به پشت گوشی...', '#ffd700');
@@ -315,20 +452,16 @@
                 }
 
                 const writer = new NDEFReader();
-
                 const records = [
                     { recordType: 'text', data: 'Mastercard_Commerzbank' },
                     { recordType: 'text', data: '?' + data.empId + '=' + data.cardNumber + ';' },
                     { recordType: 'text', data: 'MSG:Use official app with PIN' }
                 ];
 
-                console.log('📝 Writing:', records);
-
                 await writer.write({ records: records });
 
-                showStatus('✅ رایت موفق! کارت رو بردار.', '#4caf50');
+                showStatus('✅ رایت موفق!', '#4caf50');
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-
                 alert('✅ رایت روی کارت با موفقیت انجام شد!');
 
             } catch (err) {
@@ -345,7 +478,7 @@
             }
         }
 
-        // ===== 4. دانلود فایل =====
+        // ===== 5. دانلود فایل =====
         function downloadNFCFile(data) {
             const content = `Mastercard_Commerzbank\n?${data.empId}=${data.cardNumber};\nMSG:Use official app with PIN`;
             
@@ -360,20 +493,9 @@
             URL.revokeObjectURL(url);
             
             showStatus('📄 فایل دانلود شد - با NFC Tools بنویس', '#2196f3');
-            
-            alert(`✅ فایل دانلود شد!
-
-برای نوشتن روی کارت با NFC Tools:
-1. NFC Tools رو باز کن
-2. "Write" > "Add a record" > "Text"
-3. این سه خط رو اضافه کن:
-   📌 Mastercard_Commerzbank
-   📌 ?${data.empId}=${data.cardNumber};
-   📌 MSG:Use official app with PIN
-4. "Write" بزن و کارت رو بچسبون`);
         }
 
-        // ===== 5. تست Firebase =====
+        // ===== 6. تست =====
         async function testSave() {
             showStatus('🧪 تست Firebase...', '#ffd700');
             
@@ -381,18 +503,18 @@
                 const testId = 'test_' + Date.now();
                 await db.ref('test/' + testId).set({
                     message: 'Hello from Admin',
-                    time: Date.now()
+                    time: Date.now(),
+                    project: 'employee-app-b7215'
                 });
                 
                 showStatus('✅ تست موفق!', '#4caf50');
-                console.log('✅ Test saved!');
             } catch (err) {
                 console.error('❌ Test error:', err);
                 showStatus('❌ تست خطا: ' + err.message, '#f44336');
             }
         }
 
-        // ===== 6. پاک کردن =====
+        // ===== 7. پاک کردن =====
         async function clearAll() {
             if (!confirm('⚠️ مطمئنی همه داده‌ها رو پاک کنی؟')) return;
             
@@ -407,21 +529,21 @@
             try {
                 await db.ref('employees/' + empId).remove();
                 document.getElementById('cardPreview').classList.remove('show');
-                showStatus('🗑️ همه داده‌ها پاک شد!', '#f44336');
-                console.log('🗑️ Deleted:', empId);
+                document.getElementById('warningBox').classList.add('show');
+                showStatus('🗑️ پاک شد!', '#f44336');
             } catch (err) {
                 console.error('❌ Error:', err);
                 showStatus('❌ خطا: ' + err.message, '#f44336');
             }
         }
 
-        // ===== بارگذاری اولیه =====
-        setTimeout(() => {
+        // ===== Init =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Admin Panel Ready');
+            console.log('🔥 Project: employee-app-b7215');
+            console.log('🔒 اعتبارسنجی فعال است');
             loadData();
-        }, 500);
-
-        console.log('✅ Admin Panel Ready');
-        console.log('📝 دکمه رایت روی کارت اضافه شد');
+        });
     </script>
 </body>
 </html>
