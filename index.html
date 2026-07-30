@@ -11,7 +11,7 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background: #0a0a1a;
+            background: url('images/bg-main.png') center/cover no-repeat fixed;
             color: #fff;
             font-family: -apple-system, 'Segoe UI', sans-serif;
             min-height: 100vh;
@@ -19,97 +19,110 @@
             justify-content: center;
             align-items: center;
             padding: 15px;
+            position:relative;
+        }
+        body::before {
+            content:'';
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.55);
+            z-index:0;
         }
         .container {
-    max-width: 480px;
-    width: 95%;
-    background: linear-gradient(160deg, #0f0f28 0%, #1a1a3e 30%, #12122a 60%, #0a0a1f 100%);
-    border-radius: 32px;
-    padding: 30px 24px 35px;
-    border: 1.5px solid rgba(255, 215, 0, 0.2);
-    box-shadow: 
-        0 30px 80px rgba(0,0,0,0.9), 
-        0 0 60px rgba(255,215,0,0.08),
-        0 0 120px rgba(0,180,255,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.03);
-}
-
-.app-header { 
-    text-align:center; 
-    margin-bottom:25px; 
-}
-.app-title {
-    font-size:30px; 
-    font-weight:900;
-    background:linear-gradient(135deg,#ffd700,#ffaa00,#ffd700);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-    letter-spacing:1px;
-    text-shadow:none;
-}
-.app-subtitle { 
-    color:rgba(255,255,255,0.5); 
-    font-size:14px; 
-    letter-spacing:3px; 
-    margin-top:4px;
-}
-
-.nfc-area {
-    text-align:center; 
-    padding:30px 20px;
-    border:2px dashed rgba(255,215,0,0.25);
-    border-radius:24px; 
-    cursor:pointer;
-    background:rgba(255,215,0,0.02);
-    transition:all 0.3s;
-    min-height:220px;
-    display:flex; 
-    flex-direction:column; 
-    align-items:center; 
-    justify-content:center;
-}
-.nfc-area:active { 
-    border-color:#ffd700; 
-    background:rgba(255,215,0,0.06); 
-    transform:scale(0.98);
-    box-shadow:0 0 40px rgba(255,215,0,0.1);
-}
-.nfc-icon { 
-    font-size:70px; 
-    margin-bottom:12px;
-    animation:pulse 2s ease-in-out infinite;
-}
-@keyframes pulse {
-    0%,100% { transform:scale(1); }
-    50% { transform:scale(1.05); }
-}
-.nfc-text { 
-    color:#ffd700; 
-    font-size:20px; 
-    font-weight:700;
-    letter-spacing:1px;
-}
-.nfc-hint { 
-    color:rgba(255,255,255,0.4); 
-    font-size:12px; 
-    margin-top:8px;
-    letter-spacing:2px;
-}
-
-.status-bar { 
-    margin-top:15px; 
-    padding:14px; 
-    background:rgba(0,0,0,0.5); 
-    border-radius:14px; 
-    text-align:center; 
-    border:1px solid rgba(255,255,255,0.08);
-}
-#statusText { 
-    font-size:15px; 
-    font-weight:600; 
-    color:#aaa;
-    letter-spacing:1px;
-}
+            max-width: 480px;
+            width: 95%;
+            background: url('images/frame.png') center/cover no-repeat;
+            border-radius: 32px;
+            padding: 30px 24px 35px;
+            border: 1.5px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 
+                0 30px 80px rgba(0,0,0,0.9), 
+                0 0 60px rgba(255,215,0,0.08),
+                0 0 120px rgba(0,180,255,0.04),
+                inset 0 1px 0 rgba(255,255,255,0.03);
+            position:relative;
+            z-index:1;
+        }
+        .container::before {
+            content:'';
+            position:absolute; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.4);
+            border-radius:32px;
+            z-index:0;
+        }
+        .container > * {
+            position:relative;
+            z-index:1;
+        }
+        .app-header { text-align:center; margin-bottom:25px; }
+        .app-title {
+            font-size:30px; font-weight:900;
+            background:linear-gradient(135deg,#ffd700,#ffaa00,#ffd700);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            letter-spacing:1px;
+        }
+        .app-subtitle { color:rgba(255,255,255,0.5); font-size:14px; letter-spacing:3px; margin-top:4px; }
+        
+        .nfc-area {
+            text-align:center; 
+            padding:30px 20px;
+            border:2px dashed rgba(255,215,0,0.25);
+            border-radius:24px; 
+            cursor:pointer;
+            background: url('images/nfc-bg.png') center/cover no-repeat;
+            transition:all 0.3s;
+            min-height:220px;
+            display:flex; 
+            flex-direction:column; 
+            align-items:center; 
+            justify-content:center;
+            position:relative;
+            overflow:hidden;
+        }
+        .nfc-area::before {
+            content:'';
+            position:absolute;
+            top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.45);
+            border-radius:24px;
+            z-index:0;
+        }
+        .nfc-area:active { 
+            border-color:#ffd700; 
+            transform:scale(0.98);
+            box-shadow:0 0 40px rgba(255,215,0,0.1);
+        }
+        .nfc-icon { 
+            font-size:70px; 
+            margin-bottom:12px;
+            animation:pulse 2s ease-in-out infinite;
+            position:relative; z-index:1;
+        }
+        @keyframes pulse {
+            0%,100% { transform:scale(1); }
+            50% { transform:scale(1.05); }
+        }
+        .nfc-text { 
+            color:#ffd700; 
+            font-size:20px; 
+            font-weight:700;
+            letter-spacing:1px;
+            position:relative; z-index:1;
+        }
+        .nfc-hint { 
+            color:rgba(255,255,255,0.6); 
+            font-size:12px; 
+            margin-top:8px;
+            letter-spacing:2px;
+            position:relative; z-index:1;
+        }
+        
+        .status-bar { 
+            margin-top:15px; padding:14px; 
+            background:rgba(0,0,0,0.5); border-radius:14px; 
+            text-align:center; border:1px solid rgba(255,255,255,0.08);
+        }
+        #statusText { font-size:15px; font-weight:600; color:#aaa; letter-spacing:1px; }
 
         .pin-overlay {
             display:none; position:fixed; top:0; left:0; width:100%; height:100%;
@@ -176,7 +189,6 @@
             opacity:1;
         }
 
-        /* شماره کارت - پایین‌تر از وسط */
         .card-number {
             position:absolute; top:58%; left:50%; transform:translate(-50%,-50%); z-index:2;
             font-size:19px; font-weight:900; letter-spacing:3px;
@@ -184,7 +196,6 @@
             font-family:'Courier New', monospace; white-space:nowrap;
         }
 
-        /* اسم - پایین چپ */
         .card-holder {
             position:absolute; bottom:8%; left:5%; z-index:2;
             font-size:15px; font-weight:900; letter-spacing:2px;
@@ -192,7 +203,6 @@
             font-family:'Courier New', monospace;
         }
 
-        /* موجودی - پایین وسط */
         .balance-display {
             position:absolute; bottom:8%; left:50%; transform:translateX(-50%); z-index:2;
             font-size:20px; font-weight:900; color:#000;
