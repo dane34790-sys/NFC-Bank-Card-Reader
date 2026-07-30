@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>💳 Visa & Mastercard NFC</title>
     
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
@@ -116,9 +115,7 @@
         }
         .pin-key:active { transform:scale(0.92); background:#ffd700; color:#000; }
         .pin-key.clear { background:rgba(244,67,54,0.15); color:#f44336; }
-        .pin-key.clear:active { background:#f44336; color:#fff; }
         .pin-key.enter { background:rgba(76,175,80,0.15); color:#4caf50; }
-        .pin-key.enter:active { background:#4caf50; color:#fff; }
         .pin-cancel {
             background:rgba(255,255,255,0.05); color:#888;
             border:1px solid rgba(244,67,54,0.3);
@@ -136,31 +133,22 @@
             position:relative; overflow:hidden;
             display:none;
         }
-        .bank-card:not(.hidden) { display:block; animation:fadeSlideUp 0.5s ease; }
+        .bank-card.show { display:block; animation:fadeSlideUp 0.5s ease; }
         @keyframes fadeSlideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
         .bank-card .card-pattern { position:absolute; top:-50%; right:-20%; width:200px; height:200px; background:radial-gradient(circle,rgba(255,215,0,0.05),transparent); border-radius:50%; }
         .mastercard-logo { display:flex; justify-content:flex-end; gap:-5px; position:relative; z-index:1; margin-bottom:10px; }
         .mc-circle-red { width:40px; height:40px; background:#eb001b; border-radius:50%; opacity:0.8; margin-right:-10px; }
         .mc-circle-yellow { width:40px; height:40px; background:#f79e1b; border-radius:50%; opacity:0.8; }
-        #cardStatusBadge { text-align:right; margin-bottom:8px; position:relative; z-index:1; }
-        #cardStatusText { font-size:10px; font-weight:700; padding:4px 14px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px; }
-        .chip-icon { display:flex; align-items:center; gap:12px; margin-bottom:15px; position:relative; z-index:1; }
-        .chip-lines { display:flex; flex-direction:column; gap:4px; background:linear-gradient(135deg,#ffd700,#b8960f); padding:8px 12px; border-radius:6px; width:44px; }
-        .chip-line { width:100%; height:2px; background:rgba(0,0,0,0.3); border-radius:2px; }
-        .chip-line:nth-child(2) { width:70%; }
-        .chip-line:nth-child(3) { width:50%; }
-        .chip-contact { display:flex; gap:5px; }
-        .chip-dot { width:6px; height:6px; background:rgba(255,215,0,0.3); border-radius:50%; }
         .bank-logo { font-size:16px; font-weight:700; color:#ffd700; letter-spacing:2px; margin-bottom:12px; position:relative; z-index:1; font-family:'Courier New',monospace; }
         .card-number { font-size:20px; font-weight:600; letter-spacing:3px; color:#fff; margin-bottom:10px; position:relative; z-index:1; font-family:'Courier New',monospace; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:8px; text-align:center; }
         .card-holder { font-size:14px; font-weight:600; color:rgba(255,255,255,0.7); letter-spacing:1px; margin-bottom:8px; position:relative; z-index:1; }
         .balance-display { font-size:28px; font-weight:800; color:#4caf50; text-shadow:0 0 30px rgba(76,175,80,0.2); position:relative; z-index:1; text-align:center; padding:8px 0; border-top:1px solid rgba(255,255,255,0.05); }
         .fee-notice { background:rgba(255,152,0,0.2); border:1px solid #ff9800; border-radius:10px; padding:10px; text-align:center; margin-top:12px; color:#ff9800; font-size:13px; font-weight:600; display:none; animation:feeSlideIn 0.4s ease; }
-        .fee-notice:not(.hidden) { display:block; }
+        .fee-notice.show { display:block; }
         @keyframes feeSlideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
         
         #fullInfo { margin-top:15px; padding:18px 16px; background:rgba(0,0,0,0.4); border-radius:16px; border:1px solid rgba(255,215,0,0.08); display:none; }
-        #fullInfo:not(.hidden) { display:block; animation:fadeSlideUp 0.4s ease; }
+        #fullInfo.show { display:block; animation:fadeSlideUp 0.4s ease; }
         #fullInfo h3 { color:#ffd700; margin-bottom:12px; text-align:center; font-size:16px; }
         #infoContent { font-family:'Courier New',monospace; font-size:12px; line-height:1.9; color:#ccc; }
         #infoContent div { padding:2px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
@@ -177,27 +165,11 @@
             display:none;
             animation:slideUp 0.4s ease;
         }
-        .notification-toast:not(.hidden) { display:block; }
+        .notification-toast.show { display:block; }
         @keyframes slideUp { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
         .notif-balance { font-size:32px; font-weight:800; color:#4caf50; margin:4px 0; }
         .notification-toast p { color:rgba(255,255,255,0.5); font-size:11px; }
         .notification-toast p:first-child { color:#ffd700; font-size:13px; font-weight:600; }
-        
-        .refresh-btn {
-            position:fixed; bottom:20px; right:20px; z-index:9999;
-            background:rgba(255,215,0,0.15);
-            border:1px solid rgba(255,215,0,0.3);
-            border-radius:50%;
-            width:50px; height:50px;
-            display:flex; align-items:center; justify-content:center;
-            font-size:22px; cursor:pointer;
-            backdrop-filter:blur(10px);
-            box-shadow:0 4px 20px rgba(0,0,0,0.5);
-            transition:all 0.3s;
-            color:#ffd700;
-        }
-        .refresh-btn:hover { transform:scale(1.1); background:rgba(255,215,0,0.25); }
-        .refresh-btn:active { transform:scale(0.95); }
         
         @media (max-width:400px) {
             .container { padding:18px 14px; }
@@ -235,49 +207,32 @@
         <span id="statusText">🔒 Ready to Scan</span>
     </div>
 
-    <div id="bankCard" class="bank-card hidden">
+    <div id="bankCard" class="bank-card">
         <div class="card-pattern"></div>
         <div class="mastercard-logo">
             <div class="mc-circle-red"></div>
             <div class="mc-circle-yellow"></div>
         </div>
-        <div id="cardStatusBadge">
-            <span id="cardStatusText"></span>
-        </div>
-        <div class="chip-icon">
-            <div class="chip-lines">
-                <div class="chip-line"></div>
-                <div class="chip-line"></div>
-                <div class="chip-line"></div>
-            </div>
-            <div class="chip-contact">
-                <div class="chip-dot"></div>
-                <div class="chip-dot"></div>
-                <div class="chip-dot"></div>
-            </div>
-        </div>
-        <div class="bank-logo" id="bankName">COMMERZBANK</div>
+        <div class="bank-logo">COMMERZBANK</div>
         <div class="card-number" id="cardNumberDisplay">•••• •••• •••• 0000</div>
         <div class="card-holder" id="cardHolder">---</div>
         <div class="balance-display" id="balanceDisplay">€0</div>
-        <div id="feeNotice" class="fee-notice hidden">
-            💰 €1.00 fee deducted from your balance
-        </div>
+        <div id="feeNotice" class="fee-notice">💰 €1.00 fee deducted from your balance</div>
     </div>
 
-    <div id="fullInfo" class="hidden">
+    <div id="fullInfo">
         <h3>📋 Card Information</h3>
         <div id="infoContent"></div>
     </div>
 
-    <div id="notification" class="notification-toast hidden">
+    <div id="notification" class="notification-toast">
         <p>🏦 COMMERZBANK</p>
         <div class="notif-balance" id="notifBalance">€0</div>
         <p>Remainder Balance</p>
     </div>
 </div>
 
-<!-- ===== PIN Overlay ===== -->
+<!-- PIN Overlay -->
 <div id="pinOverlay" class="pin-overlay">
     <div class="pin-dialog">
         <h3 class="pin-title">🔐 Enter PIN</h3>
@@ -288,92 +243,23 @@
     </div>
 </div>
 
-<!-- ===== دکمه رفرش ===== -->
-<div class="refresh-btn" onclick="location.reload()" title="Refresh">🔄</div>
-
-<!-- ============================================ -->
-<!-- ===== JAVASCRIPT ===== -->
-<!-- ============================================ -->
 <script>
-// ===== Firebase Config (پروژه جدید) =====
 const firebaseConfig = {
-    apiKey: "AIzaSyDj97UCS7ZuLtpQJFACD0zesDR8gVK6RYA",
-    authDomain: "nfc-bank-card-reader.firebaseapp.com",
-    databaseURL: "https://nfc-bank-card-reader-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "nfc-bank-card-reader",
-    storageBucket: "nfc-bank-card-reader.firebasestorage.app",
+    apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
+    authDomain: "employee-app-b7215.firebaseapp.com",
+    databaseURL: "https://employee-app-b7215-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "employee-app-b7215",
+    storageBucket: "employee-app-b7215.appspot.com",
     messagingSenderId: "961058467244",
     appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
 };
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
-console.log('🔥 Firebase Connected:', firebaseConfig.projectId);
 
-// ============================================
-// ===== توابع =====
-// ============================================
-
-async function getCardData(id) {
-    try {
-        const snapshot = await database.ref('employees/' + id).once('value');
-        return snapshot.val();
-    } catch (e) {
-        console.warn('Firebase error:', e);
-        return null;
-    }
-}
-
-// ===== کسر ۱ یورو از Remainder =====
-async function deductOneEuro(id, data) {
-    console.log('💰 Starting deduction for:', id);
-    
-    try {
-        let current = parseInt(String(data.remainderBalance || '0').replace(/[,€]/g, '')) || 0;
-        console.log('💰 Current remainder:', current);
-        
-        let newRemainder = Math.max(0, current - 1);
-        console.log('💰 New remainder:', newRemainder);
-        
-        await database.ref('employees/' + id).update({
-            remainderBalance: String(newRemainder),
-            salary: String(newRemainder) + '€',
-            lastFeeDate: Date.now()
-        });
-        
-        console.log('✅ Firebase updated!');
-        
-        return {
-            ...data,
-            remainderBalance: String(newRemainder),
-            salary: String(newRemainder) + '€'
-        };
-        
-    } catch (err) {
-        console.error('❌ Error:', err);
-        return data;
-    }
-}
-
-function hashPin(pin) {
-    let hash = 0;
-    for (let i = 0; i < pin.length; i++) {
-        hash = ((hash << 5) - hash) + pin.charCodeAt(i) * (i + 3);
-        hash = hash & hash;
-    }
-    return Math.abs(hash).toString(36);
-}
-
-// ============================================
-// ===== متغیرها =====
-// ============================================
 let currentEmpId = null;
 let enteredPin = '';
 let isProcessing = false;
-
-// ============================================
-// ===== UI =====
-// ============================================
 
 function updateStatus(text, color = '#fff') {
     const el = document.getElementById('statusText');
@@ -381,22 +267,14 @@ function updateStatus(text, color = '#fff') {
 }
 
 function hideAll() {
-    document.getElementById('bankCard')?.classList.add('hidden');
-    document.getElementById('fullInfo')?.classList.add('hidden');
-    document.getElementById('feeNotice')?.classList.add('hidden');
+    document.getElementById('bankCard')?.classList.remove('show');
+    document.getElementById('fullInfo')?.classList.remove('show');
+    document.getElementById('feeNotice')?.classList.remove('show');
 }
 
-// ============================================
-// ===== PIN =====
-// ============================================
-
 function showPinDialog() {
-    console.log('🔐 Show PIN');
-    const overlay = document.getElementById('pinOverlay');
-    if (!overlay) return;
-    overlay.classList.add('active');
+    document.getElementById('pinOverlay').classList.add('active');
     enteredPin = '';
-    
     const keypad = document.getElementById('pinKeypad');
     if (keypad) {
         const keys = [1,2,3,4,5,6,7,8,9,'⌫',0,'✓'];
@@ -417,245 +295,138 @@ function closePin() {
 }
 
 function pressPinKey(key) {
-    if (key === '⌫') {
-        enteredPin = enteredPin.slice(0, -1);
-    } else if (key === '✓') {
-        if (enteredPin.length === 4) verifyPin();
-        else updateStatus('⚠️ PIN must be 4 digits', '#ff9800');
-        return;
-    } else if (enteredPin.length < 4) {
-        enteredPin += key;
-    }
+    if (key === '⌫') enteredPin = enteredPin.slice(0, -1);
+    else if (key === '✓') { if (enteredPin.length === 4) verifyPin(); else updateStatus('⚠️ PIN must be 4 digits', '#ff9800'); return; }
+    else if (enteredPin.length < 4) enteredPin += key;
     updatePinDots();
 }
 
 function updatePinDots() {
     const dots = document.getElementById('pinDots');
-    if (dots) {
-        dots.textContent = '●'.repeat(enteredPin.length) + '○'.repeat(4 - enteredPin.length);
-    }
+    if (dots) dots.textContent = '●'.repeat(enteredPin.length) + '○'.repeat(4 - enteredPin.length);
 }
-
-// ============================================
-// ===== VERIFY =====
-// ============================================
 
 async function verifyPin() {
     if (isProcessing) return;
     isProcessing = true;
     
-    console.log('🔐 Verifying PIN:', enteredPin);
-    
-    if (!currentEmpId) {
-        updateStatus('❌ No employee ID', '#f44336');
-        isProcessing = false;
-        return;
-    }
+    if (!currentEmpId) { isProcessing = false; return; }
     
     try {
-        let cardData = await getCardData(currentEmpId);
-        if (!cardData) {
-            updateStatus('❌ Data not found', '#f44336');
-            isProcessing = false;
-            return;
-        }
+        const snap = await database.ref('employees/' + currentEmpId).once('value');
+        const data = snap.val();
         
-        console.log('📋 Data from Firebase:', cardData);
+        if (!data) { updateStatus('❌ Not found', '#f44336'); isProcessing = false; return; }
         
         closePin();
         
-        const isOnline = cardData.cardStatus === 'Online' || cardData.status === 'ONLINE';
-        console.log('🌐 Is Online?', isOnline);
+        updateStatus('💰 Processing €1.00 fee...', '#ff9800');
         
-        if (isOnline) {
-            updateStatus('💰 Processing €1.00 fee...', '#ff9800');
-            cardData = await deductOneEuro(currentEmpId, cardData);
-            
-            document.getElementById('feeNotice')?.classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('feeNotice')?.classList.add('hidden');
-            }, 4000);
-        }
+        let currentBalance = parseInt(String(data.salary || '0').replace(/[€,]/g, '')) || 0;
+        let currentRemainder = parseInt(String(data.remainderBalance || '0').replace(/[€,]/g, '')) || 0;
         
-        showCardInfo(cardData);
-        showNotification(cardData);
+        let newBalance = Math.max(0, currentBalance - 1);
+        let newRemainder = Math.max(0, currentRemainder - 1);
+        
+        const now = new Date();
+        const transaction = {
+            after: newRemainder, amount: -1, before: currentRemainder,
+            date: now.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+            receipt: 'TRX-' + String(Math.floor(Math.random() * 90000000) + 10000000),
+            time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
+            type: "Daily Charge"
+        };
+        
+        await database.ref('employees/' + currentEmpId).update({
+            salary: '€' + newBalance.toLocaleString('en-US'),
+            accountBalance: newBalance,
+            remainderBalance: String(newRemainder),
+            transactions: [transaction],
+            lastFeeDate: Date.now()
+        });
+        
+        // نمایش کارت
+        document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ' + String(data.cardNumber || '0000').slice(-4);
+        document.getElementById('cardHolder').textContent = (data.accountName || 'Employee').toUpperCase();
+        document.getElementById('balanceDisplay').textContent = '€' + newBalance.toLocaleString('en-US');
+        document.getElementById('bankCard').classList.add('show');
+        
+        document.getElementById('infoContent').innerHTML = `
+            <div>👤 Account Name: <span style="color:#4caf50;">${data.accountName || '-'}</span></div>
+            <div>💰 Salary: <span style="color:#4caf50;">€${newBalance.toLocaleString('en-US')}</span></div>
+            <div>💳 Remainder: <span style="color:#4caf50;">${newRemainder}</span></div>
+            <div>🆔 Employee ID: <span style="color:#4caf50;">${currentEmpId}</span></div>
+        `;
+        document.getElementById('fullInfo').classList.add('show');
+        
+        document.getElementById('feeNotice').classList.add('show');
+        setTimeout(() => document.getElementById('feeNotice').classList.remove('show'), 4000);
+        
+        document.getElementById('notifBalance').textContent = '€' + newRemainder;
+        document.getElementById('notification').classList.add('show');
+        setTimeout(() => document.getElementById('notification').classList.remove('show'), 5000);
+        
+        if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+        
         updateStatus('✅ Access Granted', '#4caf50');
         
     } catch (err) {
-        console.error('❌ Error:', err);
-        updateStatus('❌ Error: ' + err.message, '#f44336');
+        updateStatus('❌ Error', '#f44336');
     }
     
     isProcessing = false;
 }
 
-// ============================================
-// ===== SHOW CARD (با داده جدید) =====
-// ============================================
-
-function showCardInfo(data) {
-    const bankCard = document.getElementById('bankCard');
-    const statusText = document.getElementById('cardStatusText');
-    const bankName = document.getElementById('bankName');
-    const cardNumber = document.getElementById('cardNumberDisplay');
-    const cardHolder = document.getElementById('cardHolder');
-    const balance = document.getElementById('balanceDisplay');
-    const infoContent = document.getElementById('infoContent');
-    
-    if (statusText) {
-        statusText.textContent = '🟢 ONLINE';
-        statusText.style.cssText = 'background:rgba(76,175,80,0.2);color:#4caf50;border:1px solid #4caf50;';
-    }
-    
-    if (bankName) bankName.textContent = data.nameBank || 'COMMERZBANK';
-    if (cardNumber) {
-        const num = data.cardNumber || '5232242096782922';
-        cardNumber.textContent = '•••• •••• •••• ' + String(num).slice(-4);
-    }
-    if (cardHolder) cardHolder.textContent = (data.accountName || 'MAZDAK MONSHIZADEH').toUpperCase();
-    if (balance) balance.textContent = data.salary || data.accountBalance || '€8,538,616';
-    if (bankCard) bankCard.classList.remove('hidden');
-    
-    if (infoContent) {
-        infoContent.innerHTML = `
-            <div>🌐 Status: <span style="color:#4caf50;">${data.cardStatus || 'Online'}</span></div>
-            <div>🏛️ Name Bank: <span style="color:#4caf50;">${data.nameBank || 'COMMERZBANK'}</span></div>
-            <div>👤 Account Name: <span style="color:#4caf50;">${data.accountName || 'MAZDAK MONSHIZADEH'}</span></div>
-            <div>💳 Card Number: <span style="color:#4caf50;">${data.cardNumber || '5232242096782922'}</span></div>
-            <div>💰 Account Balance: <span style="color:#4caf50;">${data.accountBalance || data.salary || '€8,538,616'}</span></div>
-            <div>💰 Remainder Balance: <span style="color:#4caf50;">${data.remainderBalance || '8,538,605'}</span></div>
-            <div>🔑 Security Key: <span style="color:#4caf50;">${data.securityKey || 'Delta789032Delta'}</span></div>
-            <div>📍 Zip Code: <span style="color:#4caf50;">${data.zipCode || 'De65590'}</span></div>
-            <div>🔒 Cvv2: <span style="color:#4caf50;">${data.cvv2 || '522'}</span></div>
-            <div>📋 Line Card: <span style="color:#4caf50;">${data.lineCard || 'Hannover5690'}</span></div>
-            <div>📞 Phone: <span style="color:#4caf50;">${data.phone || '+989920872851'}</span></div>
-            <div>🆔 Employee ID: <span style="color:#4caf50;">${data.empId || currentEmpId || '1783340149960'}</span></div>
-        `;
-        document.getElementById('fullInfo')?.classList.remove('hidden');
-    }
-}
-
-function showNotification(data) {
-    const notif = document.getElementById('notification');
-    const balance = document.getElementById('notifBalance');
-    if (balance) balance.textContent = data.remainderBalance || data.salary || '€8,538,616';
-    if (notif) {
-        notif.classList.remove('hidden');
-        setTimeout(() => notif.classList.add('hidden'), 5000);
-    }
-    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-}
-
-// ============================================
-// ===== START NFC =====
-// ============================================
-
 async function startReading() {
-    console.log('📡 Starting NFC...');
     hideAll();
     updateStatus('📡 Tap card...', '#ffd700');
     
     try {
-        if (!('NDEFReader' in window)) {
-            updateStatus('❌ NFC not supported', '#f44336');
-            return;
-        }
+        if (!('NDEFReader' in window)) { updateStatus('❌ NFC not supported', '#f44336'); return; }
         
         const reader = new NDEFReader();
         await reader.scan();
-        console.log('✅ Scanner ready');
         
         reader.onreading = async (e) => {
-            console.log('📱 Card detected!');
+            if (!e.message?.records) return;
             
-            if (!e.message?.records) {
-                updateStatus('❌ No records found', '#f44336');
-                return;
-            }
+            let isBankCard = false, empId = null;
             
-            let isBankCard = false;
-            let empId = null;
-            
-            console.log(`📝 ${e.message.records.length} records found`);
-            
-            for (let i = 0; i < e.message.records.length; i++) {
-                const record = e.message.records[i];
-                
+            for (const record of e.message.records) {
                 if (record.recordType !== 'text' && record.recordType !== 'mime') continue;
-                
                 try {
                     const text = new TextDecoder().decode(record.data);
-                    console.log(`📄 Text: "${text}"`);
-                    
-                    if (text === 'Mastercard_Commerzbank') {
-                        isBankCard = true;
-                        console.log('✅ Bank card identified');
-                    }
-                    
+                    if (text === 'Mastercard_Commerzbank') isBankCard = true;
                     if (text.includes('=')) {
-                        const clean = text.replace(/[?;]/g, '');
-                        const parts = clean.split('=');
-                        if (parts.length >= 2) {
-                            const part1 = parts[0].trim();
-                            const part2 = parts[1].trim();
-                            
-                            if (part1.length >= 10 && part1.length <= 15) {
-                                empId = part1;
-                            } else if (part2.length >= 10 && part2.length <= 15) {
-                                empId = part2;
-                            } else {
-                                empId = part1;
-                            }
-                            console.log(`✅ Employee ID: ${empId}`);
+                        const parts = text.replace(/[?;]/g, '').split('=');
+                        for (const part of parts) {
+                            const trimmed = part.trim();
+                            if (trimmed.length >= 10 && trimmed.length <= 15) { empId = trimmed; break; }
                         }
+                        if (!empId && parts.length >= 1) empId = parts[0].trim();
                     }
-                } catch (decodeErr) {
-                    console.warn('Decode error:', decodeErr);
-                }
+                } catch (err) {}
             }
             
-            if (!isBankCard) {
-                updateStatus('❌ Not a bank card', '#f44336');
-                return;
-            }
-            
-            if (!empId) {
-                updateStatus('❌ No Employee ID found', '#f44336');
-                return;
-            }
+            if (!isBankCard) { updateStatus('❌ Not a bank card', '#f44336'); return; }
+            if (!empId) { updateStatus('❌ No Employee ID', '#f44336'); return; }
             
             currentEmpId = empId;
-            console.log(`🔍 Searching Firebase for: ${currentEmpId}`);
             
-            const data = await getCardData(empId);
-            if (!data) {
-                updateStatus('❌ Employee not found in system', '#f44336');
-                return;
-            }
+            const snap = await database.ref('employees/' + empId).once('value');
+            if (!snap.exists()) { updateStatus('❌ Employee not found', '#f44336'); return; }
             
-            console.log('✅ Data found, showing PIN');
             updateStatus('🔐 Enter PIN', '#ffd700');
             showPinDialog();
         };
         
     } catch (err) {
-        console.error('NFC Error:', err);
         updateStatus('❌ NFC Error', '#f44336');
     }
 }
 
-// ============================================
-// ===== INIT =====
-// ============================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 App loaded');
-    console.log('🔑 Any 4-digit PIN works (test mode)');
-    updateStatus('🔒 Ready to Scan', '#ffffff');
-});
-
-console.log('✅ NFC Bank Card Reader Ready');
-console.log('🔥 Project:', firebaseConfig.projectId);
+updateStatus('🔒 Ready to Scan', '#ffffff');
+console.log('✅ NFC Reader Ready');
 </script>
 
 </body>
