@@ -27,7 +27,7 @@
             border-radius: 28px;
             padding: 25px 20px 30px;
             border: 1px solid rgba(255, 215, 0, 0.15);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,215,0,0.05);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
         }
         .app-header { text-align:center; margin-bottom:20px; }
         .app-title {
@@ -35,170 +35,188 @@
             background:linear-gradient(135deg,#ffd700,#ffaa00);
             -webkit-background-clip:text;
             -webkit-text-fill-color:transparent;
-            letter-spacing:0.5px;
         }
-        .app-subtitle { color:rgba(255,255,255,0.4); font-size:13px; letter-spacing:2px; margin-top:2px; }
+        .app-subtitle { color:rgba(255,255,255,0.4); font-size:13px; letter-spacing:2px; }
         
         .nfc-area {
-            text-align:center; padding:35px 20px;
+            text-align:center; padding:20px;
             border:2px dashed rgba(255,215,0,0.3);
             border-radius:20px; cursor:pointer;
-            transition:all 0.3s;
-            position:relative; overflow:hidden;
-            min-height:280px;
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
             background:rgba(255,215,0,0.03);
+            transition:all 0.3s;
         }
         .nfc-area:active { border-color:#ffd700; background:rgba(255,215,0,0.08); transform:scale(0.98); }
-        .card-phone-animation { position:relative; width:180px; height:180px; margin:0 auto 15px; }
-        .phone-icon { font-size:85px; position:absolute; bottom:0; left:50%; transform:translateX(-50%); filter:drop-shadow(0 5px 20px rgba(0,0,0,0.4)); }
-        .card-icon {
-            font-size:55px; position:absolute; top:10px; left:50%; transform:translateX(-50%);
-            animation:tapCardAnim 1.8s ease-in-out infinite;
-            filter:drop-shadow(0 8px 20px rgba(255,215,0,0.3));
-        }
-        @keyframes tapCardAnim {
-            0% { transform: translateX(-50%) translateY(0) rotate(-8deg); opacity:1; }
-            30% { transform: translateX(-50%) translateY(35px) rotate(-2deg); opacity:1; }
-            45% { transform: translateX(-50%) translateY(40px) rotate(0deg); opacity:0.7; }
-            55% { transform: translateX(-50%) translateY(40px) rotate(0deg); opacity:0.7; }
-            70% { transform: translateX(-50%) translateY(35px) rotate(2deg); opacity:1; }
-            100% { transform: translateX(-50%) translateY(0) rotate(-8deg); opacity:1; }
-        }
-        .nfc-waves { position:absolute; top:58%; left:50%; transform:translate(-50%,-50%); width:120px; height:120px; }
-        .wave {
-            position:absolute;
-            border:2px solid rgba(255,215,0,0.2);
-            border-radius:50%;
-            animation:waveExpand 2.5s infinite;
-        }
-        .wave:nth-child(1) { animation-delay:0s; }
-        .wave:nth-child(2) { animation-delay:0.6s; }
-        .wave:nth-child(3) { animation-delay:1.2s; }
-        @keyframes waveExpand {
-            0% { width:30px; height:30px; opacity:0.6; top:50%; left:50%; transform:translate(-50%,-50%); }
-            100% { width:130px; height:130px; opacity:0; top:50%; left:50%; transform:translate(-50%,-50%); }
-        }
-        .nfc-text { color:#ffd700; font-size:18px; font-weight:700; letter-spacing:1px; margin-top:5px; text-shadow:0 0 20px rgba(255,215,0,0.3); }
-        .nfc-hint { color:rgba(255,255,255,0.35); font-size:12px; margin-top:6px; letter-spacing:1px; }
+        .nfc-icon { font-size:50px; margin-bottom:8px; }
+        .nfc-text { color:#ffd700; font-size:16px; font-weight:700; }
+        .nfc-hint { color:rgba(255,255,255,0.35); font-size:11px; margin-top:4px; }
         
-        .status-bar { margin-top:15px; padding:12px 16px; background:rgba(0,0,0,0.4); border-radius:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
-        #statusText { font-size:14px; font-weight:500; color:#aaa; }
+        .status-bar { margin-top:12px; padding:10px; background:rgba(0,0,0,0.4); border-radius:12px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
+        #statusText { font-size:13px; font-weight:500; color:#aaa; }
 
         .pin-overlay {
-            display:none;
-            position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.93);
-            z-index:99999;
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.93); z-index:99999;
             justify-content:center; align-items:center; flex-direction:column;
-            backdrop-filter:blur(10px);
         }
         .pin-overlay.active { display:flex !important; }
         .pin-dialog {
             background:linear-gradient(145deg,#1a1a3e,#0f0f2a);
-            border:2px solid #ffd700;
-            border-radius:24px;
-            padding:35px 30px;
-            max-width:340px; width:90%;
-            text-align:center;
-            box-shadow:0 0 60px rgba(255,215,0,0.15);
+            border:2px solid #ffd700; border-radius:24px;
+            padding:30px 25px; max-width:320px; width:90%; text-align:center;
         }
-        .pin-title { color:#ffd700; font-size:24px; font-weight:700; margin-bottom:4px; }
-        .pin-sub { color:rgba(255,255,255,0.4); font-size:13px; margin-bottom:15px; }
-        .pin-dots { font-size:38px; letter-spacing:14px; color:#ffd700; margin:15px 0 22px; font-weight:bold; font-family:monospace; }
-        .pin-keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:12px 0; }
+        .pin-title { color:#ffd700; font-size:22px; font-weight:700; margin-bottom:4px; }
+        .pin-sub { color:rgba(255,255,255,0.4); font-size:12px; margin-bottom:12px; }
+        .pin-dots { font-size:34px; letter-spacing:12px; color:#ffd700; margin:12px 0; font-weight:bold; font-family:monospace; }
+        .pin-keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:10px 0; }
         .pin-key {
-            padding:16px; font-size:24px; border:none; border-radius:14px;
-            background:rgba(255,255,255,0.06); color:#fff;
-            cursor:pointer; transition:all 0.15s; font-weight:600;
-            user-select:none; -webkit-tap-highlight-color:transparent;
+            padding:14px; font-size:20px; border:none; border-radius:12px;
+            background:rgba(255,255,255,0.06); color:#fff; cursor:pointer; font-weight:600;
         }
-        .pin-key:active { transform:scale(0.92); background:#ffd700; color:#000; }
-        .pin-key.clear { background:rgba(244,67,54,0.15); color:#f44336; }
-        .pin-key.enter { background:rgba(76,175,80,0.15); color:#4caf50; }
+        .pin-key:active { background:#ffd700; color:#000; }
+        .pin-key.clear { color:#f44336; }
+        .pin-key.enter { color:#4caf50; }
         .pin-cancel {
             background:rgba(255,255,255,0.05); color:#888;
-            border:1px solid rgba(244,67,54,0.3);
-            border-radius:12px; padding:10px 30px; margin-top:10px;
-            cursor:pointer; font-size:14px; transition:all 0.2s; width:100%;
+            border:1px solid rgba(244,67,54,0.3); border-radius:10px;
+            padding:8px 25px; margin-top:8px; cursor:pointer; font-size:13px; width:100%;
         }
-        .pin-cancel:active { transform:scale(0.95); background:rgba(244,67,54,0.15); }
 
+        /* ===== کارت بانکی ===== */
         .bank-card {
-            margin-top:20px;
-            background:linear-gradient(145deg,#1a1a3e,#0d0d24);
-            border-radius:20px;
-            padding:22px 20px 20px;
-            border:1px solid rgba(255,215,0,0.15);
-            position:relative; overflow:hidden;
+            margin-top:15px;
+            background: url('images/card nfc-bg.png') center/100% 100% no-repeat;
+            border-radius:16px;
+            position:relative;
             display:none;
+            width:100%;
+            aspect-ratio:1.58/1;
+            box-shadow:0 20px 50px rgba(0,0,0,0.7);
         }
         .bank-card.show { display:block; animation:fadeSlideUp 0.5s ease; }
         @keyframes fadeSlideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
-        .bank-card .card-pattern { position:absolute; top:-50%; right:-20%; width:200px; height:200px; background:radial-gradient(circle,rgba(255,215,0,0.05),transparent); border-radius:50%; }
-        .mastercard-logo { display:flex; justify-content:flex-end; gap:-5px; position:relative; z-index:1; margin-bottom:10px; }
-        .mc-circle-red { width:40px; height:40px; background:#eb001b; border-radius:50%; opacity:0.8; margin-right:-10px; }
-        .mc-circle-yellow { width:40px; height:40px; background:#f79e1b; border-radius:50%; opacity:0.8; }
-        .bank-logo { font-size:16px; font-weight:700; color:#ffd700; letter-spacing:2px; margin-bottom:12px; position:relative; z-index:1; font-family:'Courier New',monospace; }
-        .card-number { font-size:20px; font-weight:600; letter-spacing:3px; color:#fff; margin-bottom:10px; position:relative; z-index:1; font-family:'Courier New',monospace; background:rgba(255,255,255,0.05); padding:6px 10px; border-radius:8px; text-align:center; }
-        .card-holder { font-size:14px; font-weight:600; color:rgba(255,255,255,0.7); letter-spacing:1px; margin-bottom:8px; position:relative; z-index:1; }
-        .balance-display { font-size:28px; font-weight:800; color:#4caf50; text-shadow:0 0 30px rgba(76,175,80,0.2); position:relative; z-index:1; text-align:center; padding:8px 0; border-top:1px solid rgba(255,255,255,0.05); }
-        .fee-notice { background:rgba(255,152,0,0.2); border:1px solid #ff9800; border-radius:10px; padding:10px; text-align:center; margin-top:12px; color:#ff9800; font-size:13px; font-weight:600; display:none; animation:feeSlideIn 0.4s ease; }
+
+        .bank-name {
+            position:absolute; top:7%; left:5%; z-index:2;
+            font-size:16px; font-weight:900; letter-spacing:2px;
+            color:#000; font-family:'Courier New', monospace;
+        }
+        .vip-gold {
+            position:absolute; top:7%; right:5%; z-index:2;
+            font-size:14px; font-weight:900; letter-spacing:2px;
+            color:#000; font-family:'Courier New', monospace;
+        }
+        .mastercard-logo-card {
+            position:absolute; bottom:8%; right:5%; z-index:2;
+            display:flex; align-items:center;
+        }
+        .mc-red {
+            width:30px; height:30px; background:#eb001b; border-radius:50%;
+            opacity:1; margin-right:-7px;
+        }
+        .mc-yellow {
+            width:30px; height:30px; background:#f79e1b; border-radius:50%;
+            opacity:1;
+        }
+
+        /* شماره کارت - پایین‌تر از وسط */
+        .card-number {
+            position:absolute; top:58%; left:50%; transform:translate(-50%,-50%); z-index:2;
+            font-size:19px; font-weight:900; letter-spacing:3px;
+            color:#000; text-align:center;
+            font-family:'Courier New', monospace; white-space:nowrap;
+        }
+
+        /* اسم - پایین چپ */
+        .card-holder {
+            position:absolute; bottom:8%; left:5%; z-index:2;
+            font-size:15px; font-weight:900; letter-spacing:2px;
+            color:#000; text-transform:uppercase;
+            font-family:'Courier New', monospace;
+        }
+
+        /* موجودی - پایین وسط */
+        .balance-display {
+            position:absolute; bottom:8%; left:50%; transform:translateX(-50%); z-index:2;
+            font-size:20px; font-weight:900; color:#000;
+            font-family:'Courier New', monospace;
+        }
+
+        .fee-notice { 
+            background:rgba(255,152,0,0.3); border:1px solid #ff9800; 
+            border-radius:6px; padding:5px; text-align:center; margin-top:8px; 
+            color:#fff; font-size:10px; font-weight:600; display:none;
+        }
         .fee-notice.show { display:block; }
-        @keyframes feeSlideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
-        
-        #fullInfo { margin-top:15px; padding:18px 16px; background:rgba(0,0,0,0.4); border-radius:16px; border:1px solid rgba(255,215,0,0.08); display:none; }
+
+        /* ===== کادر اطلاعات ===== */
+        #fullInfo { 
+            margin-top:12px; padding:15px 14px; 
+            background:linear-gradient(160deg, rgba(8,8,25,0.85), rgba(15,15,40,0.9));
+            backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);
+            border-radius:18px; border:1px solid rgba(255,215,0,0.2);
+            display:none;
+            box-shadow:0 20px 50px rgba(0,0,0,0.7);
+            position:relative; overflow:hidden;
+        }
         #fullInfo.show { display:block; animation:fadeSlideUp 0.4s ease; }
-        #fullInfo h3 { color:#ffd700; margin-bottom:12px; text-align:center; font-size:16px; }
-        #infoContent { font-family:'Courier New',monospace; font-size:12px; line-height:1.9; color:#ccc; }
-        #infoContent div { padding:2px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+        #fullInfo::before {
+            content:''; position:absolute; top:-50%; right:-25%;
+            width:180px; height:180px;
+            background:radial-gradient(circle, rgba(255,215,0,0.06) 0%, transparent 70%);
+            border-radius:50%;
+        }
+        #fullInfo::after {
+            content:''; position:absolute; bottom:-40%; left:-20%;
+            width:160px; height:160px;
+            background:radial-gradient(circle, rgba(100,0,255,0.04) 0%, transparent 70%);
+            border-radius:50%;
+        }
+        #fullInfo h3 { 
+            color:#ffd700; margin-bottom:10px; text-align:center; 
+            font-size:14px; letter-spacing:2px; position:relative; z-index:1;
+        }
+        #infoContent { 
+            font-family:'Courier New',monospace; font-size:10px; 
+            line-height:1.9; color:#ffd700; position:relative; z-index:1;
+        }
+        #infoContent div { 
+            padding:2px 6px; border-bottom:1px solid rgba(255,215,0,0.04);
+            display:flex; justify-content:space-between; align-items:center;
+            border-radius:5px;
+        }
+        #infoContent span { 
+            font-weight:bold; text-align:right;
+            color:#00e676; text-shadow:0 0 8px rgba(0,230,118,0.1);
+        }
         
         .notification-toast {
-            position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+            position:fixed; bottom:25px; left:50%; transform:translateX(-50%);
             background:linear-gradient(145deg,#1a1a3e,#0d0d24);
-            border:1px solid rgba(255,215,0,0.2);
-            border-radius:16px; padding:16px 28px;
-            min-width:200px; max-width:90%;
-            text-align:center;
-            box-shadow:0 10px 40px rgba(0,0,0,0.6);
-            z-index:9999;
+            border:1px solid rgba(255,215,0,0.2); border-radius:14px;
+            padding:14px 24px; min-width:180px; text-align:center; z-index:9999;
             display:none;
-            animation:slideUp 0.4s ease;
         }
         .notification-toast.show { display:block; }
-        @keyframes slideUp { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
-        .notif-balance { font-size:32px; font-weight:800; color:#4caf50; margin:4px 0; }
-        .notification-toast p { color:rgba(255,255,255,0.5); font-size:11px; }
-        .notification-toast p:first-child { color:#ffd700; font-size:13px; font-weight:600; }
+        .notif-balance { font-size:24px; font-weight:800; color:#4caf50; margin:3px 0; }
+        .notification-toast p { color:rgba(255,255,255,0.5); font-size:10px; }
         
         @media (max-width:400px) {
-            .container { padding:18px 14px; }
+            .container { padding:15px 10px; }
             .pin-dialog { padding:25px 18px; }
-            .pin-key { padding:14px; font-size:20px; }
-            .card-number { font-size:17px; }
-            .balance-display { font-size:24px; }
+            .pin-key { padding:12px; font-size:18px; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
     <div class="app-header">
         <h1 class="app-title">💳 NFC Reader</h1>
         <p class="app-subtitle">Visa & Mastercard NFC</p>
     </div>
 
-    <div class="nfc-area" id="nfcArea" onclick="startReading()">
-        <div class="nfc-waves">
-            <div class="wave"></div>
-            <div class="wave"></div>
-            <div class="wave"></div>
-        </div>
-        <div class="card-phone-animation">
-            <span class="card-icon">💳</span>
-            <span class="phone-icon">📱</span>
-        </div>
+    <div class="nfc-area" onclick="startReading()">
+        <div class="nfc-icon">📱💳</div>
         <p class="nfc-text">Tap Card on Phone</p>
         <p class="nfc-hint">HOLD YOUR CARD NEAR THE NFC ANTENNA</p>
     </div>
@@ -208,16 +226,16 @@
     </div>
 
     <div id="bankCard" class="bank-card">
-        <div class="card-pattern"></div>
-        <div class="mastercard-logo">
-            <div class="mc-circle-red"></div>
-            <div class="mc-circle-yellow"></div>
+        <div class="bank-name">COMMERZBANK</div>
+        <div class="vip-gold">VIP GOLD</div>
+        <div class="mastercard-logo-card">
+            <div class="mc-red"></div>
+            <div class="mc-yellow"></div>
         </div>
-        <div class="bank-logo">COMMERZBANK</div>
         <div class="card-number" id="cardNumberDisplay">•••• •••• •••• 0000</div>
         <div class="card-holder" id="cardHolder">---</div>
         <div class="balance-display" id="balanceDisplay">€0</div>
-        <div id="feeNotice" class="fee-notice">💰 €1.00 fee deducted from your balance</div>
+        <div id="feeNotice" class="fee-notice">💰 €1.00 fee deducted</div>
     </div>
 
     <div id="fullInfo">
@@ -232,7 +250,6 @@
     </div>
 </div>
 
-<!-- PIN Overlay -->
 <div id="pinOverlay" class="pin-overlay">
     <div class="pin-dialog">
         <h3 class="pin-title">🔐 Enter PIN</h3>
@@ -253,7 +270,6 @@ const firebaseConfig = {
     messagingSenderId: "961058467244",
     appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
 };
-
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
@@ -275,166 +291,130 @@ function hideAll() {
 function showPinDialog() {
     document.getElementById('pinOverlay').classList.add('active');
     enteredPin = '';
-    const keypad = document.getElementById('pinKeypad');
-    if (keypad) {
-        const keys = [1,2,3,4,5,6,7,8,9,'⌫',0,'✓'];
-        keypad.innerHTML = keys.map(k => {
-            let cls = 'pin-key';
-            if (k === '⌫') cls += ' clear';
-            if (k === '✓') cls += ' enter';
-            return `<button class="${cls}" onclick="pressPinKey('${k}')">${k}</button>`;
-        }).join('');
-    }
+    document.getElementById('pinKeypad').innerHTML = [1,2,3,4,5,6,7,8,9,'⌫',0,'✓'].map(k => {
+        let cls = 'pin-key';
+        if (k === '⌫') cls += ' clear';
+        if (k === '✓') cls += ' enter';
+        return `<button class="${cls}" onclick="pressPinKey('${k}')">${k}</button>`;
+    }).join('');
     updatePinDots();
     updateStatus('🔐 Enter PIN', '#ffd700');
 }
 
-function closePin() {
-    document.getElementById('pinOverlay')?.classList.remove('active');
-    enteredPin = '';
-}
-
+function closePin() { document.getElementById('pinOverlay').classList.remove('active'); }
 function pressPinKey(key) {
     if (key === '⌫') enteredPin = enteredPin.slice(0, -1);
-    else if (key === '✓') { if (enteredPin.length === 4) verifyPin(); else updateStatus('⚠️ PIN must be 4 digits', '#ff9800'); return; }
+    else if (key === '✓') { if (enteredPin.length === 4) verifyPin(); return; }
     else if (enteredPin.length < 4) enteredPin += key;
     updatePinDots();
 }
-
 function updatePinDots() {
-    const dots = document.getElementById('pinDots');
-    if (dots) dots.textContent = '●'.repeat(enteredPin.length) + '○'.repeat(4 - enteredPin.length);
+    document.getElementById('pinDots').textContent = '●'.repeat(enteredPin.length) + '○'.repeat(4 - enteredPin.length);
 }
 
 async function verifyPin() {
     if (isProcessing) return;
     isProcessing = true;
-    
     if (!currentEmpId) { isProcessing = false; return; }
     
     try {
         const snap = await database.ref('employees/' + currentEmpId).once('value');
         const data = snap.val();
-        
         if (!data) { updateStatus('❌ Not found', '#f44336'); isProcessing = false; return; }
         
         closePin();
+        updateStatus('💰 Processing...', '#ff9800');
         
-        updateStatus('💰 Processing €1.00 fee...', '#ff9800');
-        
-        let currentBalance = parseInt(String(data.salary || '0').replace(/[€,]/g, '')) || 0;
-        let currentRemainder = parseInt(String(data.remainderBalance || '0').replace(/[€,]/g, '')) || 0;
-        
-        let newBalance = Math.max(0, currentBalance - 1);
-        let newRemainder = Math.max(0, currentRemainder - 1);
+        let curBal = parseInt(String(data.salary || '0').replace(/[€,]/g, '')) || 0;
+        let curRem = parseInt(String(data.remainderBalance || '0').replace(/[€,]/g, '')) || 0;
+        let newBal = Math.max(0, curBal - 1);
+        let newRem = Math.max(0, curRem - 1);
         
         const now = new Date();
-        const transaction = {
-            after: newRemainder, amount: -1, before: currentRemainder,
-            date: now.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
-            receipt: 'TRX-' + String(Math.floor(Math.random() * 90000000) + 10000000),
-            time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
-            type: "Daily Charge"
-        };
-        
         await database.ref('employees/' + currentEmpId).update({
-            salary: '€' + newBalance.toLocaleString('en-US'),
-            accountBalance: newBalance,
-            remainderBalance: String(newRemainder),
-            transactions: [transaction],
+            salary: '€' + newBal.toLocaleString('en-US'),
+            accountBalance: newBal,
+            remainderBalance: String(newRem),
+            transactions: [{
+                after: newRem, amount: -1, before: curRem,
+                date: now.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+                receipt: 'TRX-' + String(Math.floor(Math.random() * 90000000) + 10000000),
+                time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
+                type: "Daily Charge"
+            }],
             lastFeeDate: Date.now()
         });
         
-        // نمایش کارت
         document.getElementById('cardNumberDisplay').textContent = '•••• •••• •••• ' + String(data.cardNumber || '0000').slice(-4);
         document.getElementById('cardHolder').textContent = (data.accountName || 'Employee').toUpperCase();
-        document.getElementById('balanceDisplay').textContent = '€' + newRemainder.toLocaleString('en-US');
+        document.getElementById('balanceDisplay').textContent = '€' + newRem.toLocaleString('en-US');
         document.getElementById('bankCard').classList.add('show');
         
         document.getElementById('infoContent').innerHTML = `
-            <div>🌐 Status: <span style="color:#4caf50;">${data.cardStatus || data.status || 'Online'}</span></div>
-            <div>🏛️ Name Bank: <span style="color:#4caf50;">${data.nameBank || 'COMMERZBANK'}</span></div>
-            <div>👤 Account Name: <span style="color:#4caf50;">${data.accountName || '-'}</span></div>
-            <div>💳 Card Number: <span style="color:#4caf50;">${data.cardNumber || '-'}</span></div>
-            <div>💰 Account Balance: <span style="color:#4caf50;">${data.accountBalance || '€' + newBalance.toLocaleString('en-US')}</span></div>
-            <div>💰 Remainder Balance: <span style="color:#4caf50;">${newRemainder}</span></div>
-            <div>🔑 Security Key: <span style="color:#4caf50;">${data.securityKey || '-'}</span></div>
-            <div>📍 Zip Code: <span style="color:#4caf50;">${data.zipCode || '-'}</span></div>
-            <div>🔒 Cvv2: <span style="color:#4caf50;">${data.cvv2 || '-'}</span></div>
-            <div>📋 Line Card: <span style="color:#4caf50;">${data.lineCard || '-'}</span></div>
-            <div>📞 Phone: <span style="color:#4caf50;">${data.phone || '-'}</span></div>
-            <div>🆔 Employee ID: <span style="color:#4caf50;">${currentEmpId || data.empId || '-'}</span></div>
+            <div>🌐 Status <span>${data.cardStatus || data.status || 'Online'}</span></div>
+            <div>🏛️ Name Bank <span>${data.nameBank || 'COMMERZBANK'}</span></div>
+            <div>👤 Account Name <span>${data.accountName || '-'}</span></div>
+            <div>💳 Card Number <span>${data.cardNumber || '-'}</span></div>
+            <div>💰 Account Balance <span>${data.accountBalance || '€' + newBal.toLocaleString('en-US')}</span></div>
+            <div>💰 Remainder Balance <span>${newRem.toLocaleString('en-US')}</span></div>
+            <div>🔑 Security Key <span>${data.securityKey || '-'}</span></div>
+            <div>📍 Zip Code <span>${data.zipCode || '-'}</span></div>
+            <div>🔒 Cvv2 <span>${data.cvv2 || '-'}</span></div>
+            <div>📋 Line Card <span>${data.lineCard || '-'}</span></div>
+            <div>📞 Phone <span>${data.phone || '-'}</span></div>
+            <div>🆔 Employee ID <span>${currentEmpId || '-'}</span></div>
         `;
         document.getElementById('fullInfo').classList.add('show');
         
         document.getElementById('feeNotice').classList.add('show');
         setTimeout(() => document.getElementById('feeNotice').classList.remove('show'), 4000);
         
-        document.getElementById('notifBalance').textContent = '€' + newRemainder;
+        document.getElementById('notifBalance').textContent = '€' + newRem;
         document.getElementById('notification').classList.add('show');
         setTimeout(() => document.getElementById('notification').classList.remove('show'), 5000);
         
         if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-        
         updateStatus('✅ Access Granted', '#4caf50');
-        
-    } catch (err) {
-        updateStatus('❌ Error', '#f44336');
-    }
-    
+    } catch (err) { updateStatus('❌ Error', '#f44336'); }
     isProcessing = false;
 }
 
 async function startReading() {
     hideAll();
     updateStatus('📡 Tap card...', '#ffd700');
-    
     try {
         if (!('NDEFReader' in window)) { updateStatus('❌ NFC not supported', '#f44336'); return; }
-        
         const reader = new NDEFReader();
         await reader.scan();
-        
         reader.onreading = async (e) => {
             if (!e.message?.records) return;
-            
             let isBankCard = false, empId = null;
-            
-            for (const record of e.message.records) {
-                if (record.recordType !== 'text' && record.recordType !== 'mime') continue;
+            for (const r of e.message.records) {
+                if (r.recordType !== 'text') continue;
                 try {
-                    const text = new TextDecoder().decode(record.data);
-                    if (text === 'Mastercard_Commerzbank') isBankCard = true;
-                    if (text.includes('=')) {
-                        const parts = text.replace(/[?;]/g, '').split('=');
-                        for (const part of parts) {
-                            const trimmed = part.trim();
-                            if (trimmed.length >= 10 && trimmed.length <= 15) { empId = trimmed; break; }
+                    const t = new TextDecoder().decode(r.data);
+                    if (t === 'Mastercard_Commerzbank') isBankCard = true;
+                    if (t.includes('=')) {
+                        const p = t.replace(/[?;]/g, '').split('=');
+                        for (const x of p) {
+                            const tr = x.trim();
+                            if (tr.length >= 10 && tr.length <= 15) { empId = tr; break; }
                         }
-                        if (!empId && parts.length >= 1) empId = parts[0].trim();
                     }
-                } catch (err) {}
+                } catch (ex) {}
             }
-            
             if (!isBankCard) { updateStatus('❌ Not a bank card', '#f44336'); return; }
-            if (!empId) { updateStatus('❌ No Employee ID', '#f44336'); return; }
-            
+            if (!empId) { updateStatus('❌ No ID', '#f44336'); return; }
             currentEmpId = empId;
-            
             const snap = await database.ref('employees/' + empId).once('value');
-            if (!snap.exists()) { updateStatus('❌ Employee not found', '#f44336'); return; }
-            
+            if (!snap.exists()) { updateStatus('❌ Not found', '#f44336'); return; }
             updateStatus('🔐 Enter PIN', '#ffd700');
             showPinDialog();
         };
-        
-    } catch (err) {
-        updateStatus('❌ NFC Error', '#f44336');
-    }
+    } catch (err) { updateStatus('❌ Error', '#f44336'); }
 }
 
 updateStatus('🔒 Ready to Scan', '#ffffff');
-console.log('✅ NFC Reader Ready');
 </script>
 
 </body>
