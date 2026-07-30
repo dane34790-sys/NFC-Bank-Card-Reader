@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>💳 NFC Reader - Debug</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #0a0a1a;
+            color: #fff;
+            font-family: -apple-system, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .container {
+            max-width: 420px;
+            width: 100%;
+            background: linear-gradient(145deg, #12122a, #1a1a3e);
+            border-radius: 28px;
+            padding: 25px 20px 30px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+        }
+        .app-header { text-align:center; margin-bottom:20px; }
+        .app-title { font-size:26px; font-weight:800; color:#ffd700; }
+        .app-subtitle { color:rgba(255,255,255,0.4); font-size:13px; }
+        
+        .nfc-area {
+            text-align:center; padding:35px 20px;
+            border:2px dashed rgba(255,215,0,0.3);
+            border-radius:20px; cursor:pointer;
+            background:rgba(255,215,0,0.03);
+        }
+        .nfc-area:active { border-color:#ffd700; background:rgba(255,215,0,0.08); }
+        .nfc-text { color:#ffd700; font-size:18px; font-weight:700; }
+        .nfc-hint { color:rgba(255,255,255,0.35); font-size:12px; margin-top:6px; }
+        
+        .debug-box {
+            margin-top:15px;
+            padding:15px;
+            background: rgba(0,0,0,0.6);
+            border-radius:12px;
+            border: 1px solid #ff9800;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+        .debug-box h3 { color:#ff9800; margin-bottom:8px; font-size:14px; }
+        .debug-line { padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .debug-line.success { color:#4caf50; }
+        .debug-line.error { color:#f44336; }
+        .debug-line.warning { color:#ff9800; }
+        .debug-line.info { color:#2196f3; }
+        
+        .status-bar {
+            margin-top:10px; padding:10px;
+            background:rgba(0,0,0,0.4); border-radius:8px;
+            text-align:center; font-size:14px;
+        }
+        
+        button {
+            width:100%; padding:12px; margin-top:10px;
+            border:none; border-radius:10px;
+            font-size:16px; font-weight:bold; cursor:pointer;
+            background:#ff9800; color:#fff;
+        }
+        button:active { transform:scale(0.96); }
+        
+        .pin-overlay {
+            display:none;
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.93);
+            z-index:99999;
+            justify-content:center; align-items:center; flex-direction:column;
+        }
+        .pin-overlay.active { display:flex !important; }
+        .pin-dialog {
+            background:linear-gradient(145deg,#1a1a3e,#0f0f2a);
+            border:2px solid #ffd700;
+            border-radius:24px;
+            padding:35px 30px;
+            max-width:340px; width:90%;
+            text-align:center;
+        }
+        .pin-title { color:#ffd700; font-size:24px; font-weight:700; margin-bottom:15px; }
+        .pin-dots { font-size:38px; letter-spacing:14px; color:#ffd700; margin:15px 0; }
+        .pin-keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+        .pin-key {
+            padding:16px; font-size:24px; border:none; border-radius:14px;
+            background:rgba(255,255,255,0.06); color:#fff;
+            cursor:pointer; font-weight:600;
+        }
+        .pin-key:active { background:#ffd700; color:#000; }
+        .pin-key.clear { color:#f44336; }
+        .pin-key.enter { color:#4caf50; }
+        .pin-cancel {
+            background:rgba(255,255,255,0.05); color:#888;
+            border:1px solid rgba(244,67,54,0.3);
+            border-radius:12px; padding:10px 30px; margin-top:10px;
+            cursor:pointer; font-size:14px; width:100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="app-header">
+        <h1 class="app-title">💳 NFC Debug</h1>
+        <p class="app-subtitle">Visa & Mastercard NFC - Debug Mode</p>
+    </div>
+
+    <div class="nfc-area" onclick="startReading()">
+        <p class="nfc-text">📱 Tap Card Here</p>
+        <p class="nfc-hint">کارت رو بچسبون به پشت گوشی</p>
+    </div>
+
+    <div class="status-bar">
+        <span id="statusText" style="color:#aaa;">🔒 Ready</span>
+    </div>
+
+    <!-- Debug Box -->
+    <div class="debug-box" id="debugBox">
+        <h3>🔍 Debug Log</h3>
+        <div id="debugContent">
+            <div class="debug-line info">⏳ منتظر اسکن کارت...</div>
+        </div>
+    </div>
+
+    <button onclick="testFirebase()">🧪 تست اتصال Firebase</button>
+    <button onclick="listAllEmployees()">📋 لیست همه کارمندا</button>
+    <button onclick="manualTest()">🔢 تست دستی با ID</button>
+</div>
+
+<!-- PIN Overlay -->
+<div id="pinOverlay" class="pin-overlay">
+    <div class="pin-dialog">
+        <h3 class="pin-title">🔐 Enter PIN</h3>
+        <div class="pin-dots" id="pinDots">○○○○</div>
+        <div class="pin-keypad" id="pinKeypad"></div>
+        <button class="pin-cancel" onclick="closePin()">❌ Cancel</button>
+    </div>
+</div>
+
+<script>
+// ===== Firebase Config =====
+const firebaseConfig = {
+    apiKey: "AIzaSyAYsu4Ji-eFHx55ARX6_4PRb5SRfx-jrhw",
+    authDomain: "employee-app-b7215.firebaseapp.com",
+    databaseURL: "https://employee-app-b7215-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "employee-app-b7215",
+    storageBucket: "employee-app-b7215.appspot.com",
+    messagingSenderId: "961058467244",
+    appId: "1:961058467244:web:6b4af6cbb8270ef94e1e09"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+console.log('🔥 Firebase Connected');
+
+let currentEmpId = null;
+let enteredPin = '';
+let isProcessing = false;
+
+// ===== Debug Functions =====
+function addDebug(text, type = 'info') {
+    const content = document.getElementById('debugContent');
+    const line = document.createElement('div');
+    line.className = `debug-line ${type}`;
+    const time = new Date().toLocaleTimeString();
+    line.textContent = `[${time}] ${text}`;
+    content.appendChild(line);
+    content.scrollTop = content.scrollHeight;
+    console.log(`[${type}]`, text);
+}
+
+function updateStatus(text, color = '#aaa') {
+    document.getElementById('statusText').textContent = text;
+    document.getElementById('statusText').style.color = color;
+}
+
+// ===== Test Firebase =====
+async function testFirebase() {
+    addDebug('🧪 تست اتصال Firebase...', 'info');
+    
+    try {
+        const testId = 'test_' + Date.now();
+        await database.ref('test/' + testId).set({
+            message: 'Test from NFC Debug',
+            time: Date.now()
+        });
+        
+        addDebug('✅ اتصال Firebase موفق!', 'success');
+        addDebug(`📝 تست با ID: ${testId}`, 'info');
+        
+        // چک کردن مسیر employees
+        const snap = await database.ref('employees').once('value');
+        if (snap.exists()) {
+            const count = Object.keys(snap.val()).length;
+            addDebug(`✅ مسیر employees پیدا شد - ${count} کارمند`, 'success');
+        } else {
+            addDebug('⚠️ مسیر employees خالیه!', 'warning');
+        }
+        
+    } catch (err) {
+        addDebug(`❌ خطا: ${err.message}`, 'error');
+    }
+}
+
+// ===== List All Employees =====
+async function listAllEmployees() {
+    addDebug('📋 دریافت لیست کارمندان...', 'info');
+    
+    try {
+        const snap = await database.ref('employees').once('value');
+        
+        if (!snap.exists()) {
+            addDebug('⚠️ هیچ کارمندی پیدا نشد!', 'warning');
+            addDebug('💡 با Admin Panel یه کارمند بساز', 'info');
+            return;
+        }
+        
+        const employees = snap.val();
+        const ids = Object.keys(employees);
+        
+        addDebug(`✅ ${ids.length} کارمند پیدا شد:`, 'success');
+        
+        ids.forEach(id => {
+            const emp = employees[id];
+            addDebug(`  🆔 ${id} | 👤 ${emp.accountName || '?'} | 💰 Salary: ${emp.salary || '?'} | 💳 Remainder: ${emp.remainderBalance || '?'}`, 'info');
+        });
+        
+        // ذخیره تو کنسول
+        console.table(ids.map(id => ({
+            id: id,
+            name: employees[id].accountName,
+            salary: employees[id].salary,
+            remainder: employees[id].remainderBalance
+        })));
+        
+    } catch (err) {
+        addDebug(`❌ خطا: ${err.message}`, 'error');
+    }
+}
+
+// ===== Manual Test =====
+async function manualTest() {
+    const id = prompt('Employee ID رو وارد کن:', '1783340149960');
+    if (!id) return;
+    
+    addDebug(`🔍 تست دستی برای: ${id}`, 'info');
+    
+    try {
+        const snap = await database.ref('employees/' + id).once('value');
+        
+        if (snap.exists()) {
+            const data = snap.val();
+            addDebug('✅ کارمند پیدا شد!', 'success');
+            addDebug(`  👤 نام: ${data.accountName || '?'}`, 'info');
+            addDebug(`  💰 موجودی: ${data.salary || data.remainderBalance || '?'}`, 'info');
+            addDebug(`  🔑 PIN: ${data.pin || 'نداره'}`, 'info');
+            
+            currentEmpId = id;
+            showPinDialog();
+        } else {
+            addDebug(`❌ کارمند با ID "${id}" پیدا نشد!`, 'error');
+            addDebug('💡 این ID تو دیتابیس نیست. با Admin Panel بسازش.', 'warning');
+        }
+    } catch (err) {
+        addDebug(`❌ خطا: ${err.message}`, 'error');
+    }
+}
+
+// ===== PIN Functions =====
+function showPinDialog() {
+    const overlay = document.getElementById('pinOverlay');
+    overlay.classList.add('active');
+    enteredPin = '';
+    
+    const keypad = document.getElementById('pinKeypad');
+    const keys = [1,2,3,4,5,6,7,8,9,'⌫',0,'✓'];
+    keypad.innerHTML = keys.map(k => {
+        let cls = 'pin-key';
+        if (k === '⌫') cls += ' clear';
+        if (k === '✓') cls += ' enter';
+        return `<button class="${cls}" onclick="pressPinKey('${k}')">${k}</button>`;
+    }).join('');
+    
+    updatePinDots();
+    updateStatus('🔐 Enter PIN', '#ffd700');
+}
+
+function closePin() {
+    document.getElementById('pinOverlay').classList.remove('active');
+    enteredPin = '';
+}
+
+function pressPinKey(key) {
+    if (key === '⌫') {
+        enteredPin = enteredPin.slice(0, -1);
+    } else if (key === '✓') {
+        if (enteredPin.length === 4) verifyPin();
+        else addDebug('⚠️ PIN باید ۴ رقم باشه', 'warning');
+        return;
+    } else if (enteredPin.length < 4) {
+        enteredPin += key;
+    }
+    updatePinDots();
+}
+
+function updatePinDots() {
+    const dots = document.getElementById('pinDots');
+    dots.textContent = '●'.repeat(enteredPin.length) + '○'.repeat(4 - enteredPin.length);
+}
+
+async function verifyPin() {
+    if (isProcessing) return;
+    isProcessing = true;
+    
+    addDebug(`🔐 بررسی PIN: ${enteredPin}`, 'info');
+    
+    try {
+        const snap = await database.ref('employees/' + currentEmpId).once('value');
+        const data = snap.val();
+        
+        if (!data) {
+            addDebug('❌ داده پیدا نشد', 'error');
+            isProcessing = false;
+            return;
+        }
+        
+        addDebug(`✅ PIN قبول شد (حالت تست)`, 'success');
+        addDebug(`💰 موجودی قبل: ${data.salary || data.remainderBalance}`, 'info');
+        
+        closePin();
+        
+        // کم کردن ۱ یورو
+        let currentBalance = 0;
+        if (data.salary) {
+            currentBalance = parseInt(String(data.salary).replace(/[€,]/g, '')) || 0;
+        }
+        let currentRemainder = parseInt(String(data.remainderBalance || '0').replace(/[€,]/g, '')) || 0;
+        
+        let newBalance = Math.max(0, currentBalance - 1);
+        let newRemainder = Math.max(0, currentRemainder - 1);
+        
+        await database.ref('employees/' + currentEmpId).update({
+            salary: '€' + newBalance.toLocaleString('en-US'),
+            accountBalance: newBalance,
+            remainderBalance: String(newRemainder),
+            lastFeeDate: Date.now()
+        });
+        
+        addDebug(`✅ ۱ یورو کم شد`, 'success');
+        addDebug(`💰 موجودی جدید: €${newBalance.toLocaleString()}`, 'success');
+        updateStatus('✅ €1.00 Deducted', '#4caf50');
+        
+    } catch (err) {
+        addDebug(`❌ خطا: ${err.message}`, 'error');
+    }
+    
+    isProcessing = false;
+}
+
+// ===== NFC Reader =====
+async function startReading() {
+    addDebug('📡 شروع اسکن NFC...', 'info');
+    updateStatus('📡 Scanning...', '#ffd700');
+    
+    try {
+        if (!('NDEFReader' in window)) {
+            addDebug('❌ مرورگر NFC پشتیبانی نمی‌کنه', 'error');
+            updateStatus('❌ NFC Not Supported', '#f44336');
+            return;
+        }
+        
+        const reader = new NDEFReader();
+        await reader.scan();
+        addDebug('✅ اسکنر آماده است', 'success');
+        
+        reader.onreading = async (e) => {
+            addDebug('📱 کارت پیدا شد!', 'success');
+            
+            if (!e.message?.records) {
+                addDebug('❌ رکوردی روی کارت نیست', 'error');
+                return;
+            }
+            
+            addDebug(`📝 تعداد رکوردها: ${e.message.records.length}`, 'info');
+            
+            let isBankCard = false;
+            let empId = null;
+            let allTexts = [];
+            
+            for (let i = 0; i < e.message.records.length; i++) {
+                const record = e.message.records[i];
+                
+                addDebug(`📌 رکورد ${i+1}: نوع=${record.recordType}`, 'info');
+                
+                if (record.recordType === 'text' || record.recordType === 'mime') {
+                    try {
+                        const text = new TextDecoder().decode(record.data);
+                        allTexts.push(text);
+                        addDebug(`   📄 متن: "${text}"`, 'info');
+                        
+                        if (text === 'Mastercard_Commerzbank') {
+                            isBankCard = true;
+                            addDebug('   ✅ کارت بانکی شناسایی شد', 'success');
+                        }
+                        
+                        // استخراج Employee ID
+                        if (text.includes('=')) {
+                            const clean = text.replace(/[?;]/g, '');
+                            const parts = clean.split('=');
+                            addDebug(`   🔍 Parse: parts=${JSON.stringify(parts)}`, 'info');
+                            
+                            if (parts.length >= 2) {
+                                // چک کن کدوم قسمت شبیه Employee ID هست
+                                for (const part of parts) {
+                                    const trimmed = part.trim();
+                                    if (trimmed.length >= 10 && trimmed.length <= 15) {
+                                        empId = trimmed;
+                                        addDebug(`   ✅ Employee ID: ${empId}`, 'success');
+                                        break;
+                                    }
+                                }
+                                
+                                if (!empId && parts.length >= 2) {
+                                    // از قسمت اول یا دوم استفاده کن
+                                    empId = parts[0].trim();
+                                    addDebug(`   ⚠️ استفاده از قسمت اول: ${empId}`, 'warning');
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        addDebug(`   ❌ خطای Decode: ${err.message}`, 'error');
+                    }
+                }
+            }
+            
+            // خلاصه
+            addDebug('--- خلاصه ---', 'info');
+            addDebug(`🏦 کارت بانکی: ${isBankCard ? '✅ بله' : '❌ خیر'}`, isBankCard ? 'success' : 'error');
+            addDebug(`🆔 Employee ID: ${empId || '❌ پیدا نشد'}`, empId ? 'success' : 'error');
+            addDebug(`📄 متن‌های کارت: ${JSON.stringify(allTexts)}`, 'info');
+            
+            if (!isBankCard) {
+                updateStatus('❌ Not a bank card', '#f44336');
+                return;
+            }
+            
+            if (!empId) {
+                updateStatus('❌ No Employee ID', '#f44336');
+                addDebug('💡 نکته: کارت باید با Admin Panel رایت شده باشه', 'warning');
+                return;
+            }
+            
+            // جستجو در Firebase
+            addDebug(`🔍 جستجو در Firebase: employees/${empId}`, 'info');
+            
+            const snap = await database.ref('employees/' + empId).once('value');
+            
+            if (snap.exists()) {
+                const data = snap.val();
+                addDebug('✅ کارمند در دیتابیس پیدا شد!', 'success');
+                addDebug(`  👤 ${data.accountName}`, 'info');
+                addDebug(`  💰 ${data.salary || data.remainderBalance}`, 'info');
+                
+                currentEmpId = empId;
+                updateStatus('🔐 Enter PIN', '#ffd700');
+                showPinDialog();
+            } else {
+                addDebug(`❌ Employee ID "${empId}" در دیتابیس نیست!`, 'error');
+                addDebug('💡 این ID رو با Admin Panel بساز', 'warning');
+                
+                // لیست کردن همه IDهای موجود
+                const allSnap = await database.ref('employees').once('value');
+                if (allSnap.exists()) {
+                    const ids = Object.keys(allSnap.val());
+                    addDebug(`📋 IDهای موجود: ${ids.join(', ')}`, 'info');
+                }
+                
+                updateStatus('❌ Employee Not Found', '#f44336');
+            }
+        };
+        
+    } catch (err) {
+        addDebug(`❌ خطای NFC: ${err.message}`, 'error');
+        updateStatus('❌ Error', '#f44336');
+    }
+}
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', function() {
+    addDebug('🚀 اپ Debug آماده است', 'success');
+    addDebug('📱 روی صفحه بزن تا اسکن شروع بشه', 'info');
+    addDebug('🔥 پروژه: employee-app-b7215', 'info');
+    
+    // تست اولیه Firebase
+    testFirebase();
+});
+</script>
+
+</body>
+</html>
